@@ -20,10 +20,12 @@ source.include_exts = py,png,jpg,jpeg,mp4
 # Include all _resized.mp4 (full-size videos) for APK
 source.include_patterns = assets/*.png,assets/*.jpg,assets/*_resized.mp4,*.py
 
-# (str) Main entry point for Android (simplified Kivy version)
-# Note: main.py contains the full NiceGUI version for web deployment
-# main_kivy.py is the Kivy Android entry point
-android.entrypoint = main_kivy.py
+# (str) Main entry point for Android (Java/Kotlin activity class name)
+# Note: Keep the Python entry filename as `main_kivy.py` in the app source,
+# but the Android manifest must reference the activity class. Use the
+# standard Kivy activity so the system doesn't try to instantiate a Python
+# filename as a Java class.
+android.entrypoint = org.kivy.android.PythonActivity
 
 # (str) Application versioning (method 1)
 version = 1.0
