@@ -108,7 +108,14 @@ jobs:
         echo "=== Initializing Buildozer ==="
         buildozer init || echo "Already initialized"
         
+        echo "=== Copying gradle.properties to buildozer directory ==="
+        mkdir -p .buildozer/android/platform/
+        cp gradle.properties .buildozer/ || true
+        
     - name: Build APK with Buildozer (with detailed logging)
+      env:
+        GRADLE_OPTS: "-Xmx6g -XX:MaxMetaspaceSize=1024m"
+        CYTHON_LANGUAGE_LEVEL: "3"
       run: |
         set -e
         echo "=== Starting Buildozer Android Debug Build ==="

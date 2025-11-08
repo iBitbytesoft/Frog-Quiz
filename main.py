@@ -3,6 +3,7 @@ from datetime import datetime
 from pathlib import Path
 import random
 import platform
+import os
 
 
 ## local assets folder
@@ -502,8 +503,11 @@ else:
 
 
 if __name__ in {"__main__", "__mp_main__"}:
+    # Get port from environment variable (for Railway, Render, etc.) or default to 8080
+    port = int(os.environ.get('PORT', 8080))
+    
     if platform.system() == 'Android':
         ui.run(host='0.0.0.0', port=8080, reload=False)
         start_webview()
     else:
-        ui.run(host='0.0.0.0', port=8080)
+        ui.run(host='0.0.0.0', port=port, reload=False, show=False)
