@@ -202,16 +202,20 @@ class FrogDetailScreen(Screen):
         self.species_lbl.text = frog['species']
         self.frog_img.source = frog['photo']
         
-        # Load video - it will show first frame as thumbnail
-        video_path = Path(frog['video']).absolute()
-        if video_path.exists():
-            print(f"Loading video: {video_path}")
-            self.video.source = str(video_path)
-            # Load the video but don't play - shows first frame
-            self.video.state = 'pause'
-            Clock.schedule_once(lambda dt: setattr(self.video, 'state', 'pause'), 0.1)
+        # Load video - use relative path for Android compatibility
+        import os
+        if platform.system() == 'Android':
+            # On Android, use relative path from app directory
+            video_path = frog['video']
         else:
-            print(f"Video not found: {video_path}")
+            # On desktop, use absolute path
+            video_path = str(Path(frog['video']).absolute())
+        
+        print(f"Loading video: {video_path}")
+        self.video.source = video_path
+        # Load the video but don't play - shows first frame
+        self.video.state = 'pause'
+        Clock.schedule_once(lambda dt: setattr(self.video, 'state', 'pause'), 0.1)
         
         self.playing = False
         self.play_btn.background_normal = 'assets/PLAY.png'
@@ -382,14 +386,15 @@ class MysteryScreen(Screen):
         self.revealed = False
         self.playing = False
         
-        # Set video
-        video_path = Path(self.current_frog['video'])
-        if not video_path.exists():
-            fallback = self.current_frog['video'].replace('_mobile.mp4', '_resized.mp4')
-            self.video.source = fallback
+        # Set video - use relative path for Android
+        import os
+        if platform.system() == 'Android':
+            video_path = self.current_frog['video']
         else:
-            self.video.source = self.current_frog['video']
+            video_path = str(Path(self.current_frog['video']).absolute())
         
+        print(f"Loading quiz video: {video_path}")
+        self.video.source = video_path
         self.video.state = 'stop'
         self.play_btn.background_normal = 'assets/PLAY.png'
         self.result_lbl.text = ''

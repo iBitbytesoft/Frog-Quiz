@@ -45,7 +45,7 @@ android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE,ACCE
 
 # (list) Application requirements
 # Simplified to only Kivy basics - NiceGUI doesn't work well with P4A
-requirements = python3==3.10.10,hostpython3==3.10.10,kivy==2.2.1,pyjnius,android
+requirements = python3==3.10.10,hostpython3==3.10.10,kivy==2.2.1,pyjnius,android,ffpyplayer
 
 # (str) The Android arch to build for
 android.archs = arm64-v8a
