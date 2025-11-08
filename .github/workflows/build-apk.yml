@@ -25,12 +25,14 @@ jobs:
       run: |
         echo "=== Checking buildozer.spec ==="
         ls -la buildozer.spec
-        echo "=== Verifying source.filename parameter ==="
-        grep -E "^source\.(filename|main)" buildozer.spec || echo "WARNING: source.filename not found!"
         echo "=== Full buildozer.spec content ==="
         cat buildozer.spec
-        echo "=== Checking main_kivy.py (APK entry point) ==="
-        ls -la main_kivy.py
+        echo "=== Checking main.py (APK entry point - renamed from main_kivy.py) ==="
+        ls -la main.py
+        echo "=== Verifying main.py is the Kivy app (not NiceGUI) ==="
+        head -20 main.py
+        echo "=== Checking main_web.py (NiceGUI web app - should be excluded) ==="
+        ls -la main_web.py || echo "main_web.py exists"
         echo "=== Checking assets directory ==="
         ls -la assets/ || echo "Assets directory not found"
         echo "=== Checking video files size ==="
