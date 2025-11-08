@@ -1,534 +1,523 @@
-from nicegui import ui, app
-from datetime import datetime
+"""
+Kivy Frog Quiz App - Full Mobile & Web Compatible Version
+Matches NiceGUI UI exactly, works as APK and web deployment
+Uses full-size videos (_resized.mp4) for best quality
+"""
+from kivy.app import App
+from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.button import Button
+from kivy.uix.label import Label
+from kivy.uix.image import Image, AsyncImage
+from kivy.uix.video import Video
+from kivy.core.window import Window
+from kivy.clock import Clock
+from kivy.graphics import Color, Rectangle
+from kivy.uix.widget import Widget
 from pathlib import Path
 import random
 import platform
-import os
+
+# Force landscape orientation on desktop (Android handles this via buildozer.spec)
+if platform.system() not in ['Android', 'Linux']:  # Don't set size on Android
+    Window.size = (1600, 720)
+Window.clearcolor = (0.18, 0.54, 0.34, 1)  # #2E8B57 green
+
+# Frog data - using full-size _resized.mp4 videos
+FROGS = [
+    {"name": "Growling Grass\nFrog", "photo": "assets/GGF.png", "species": "Ranoidea (nee Litoria) raniformis",
+     "video": "assets/GGF_resized.mp4", "preview": "assets/GGF_spec_safe3_preview.jpg", "id": "ggf"},
+    {"name": "Southern Brown\nTree Frog", "photo": "assets/SBTF.png", "species": "Litoria ewingii", 
+     "video": "assets/SBTF_resized.mp4", "preview": "assets/SBTF_spec_safe3_preview.jpg", "id": "sbtf"},
+    {"name": "Peron's Tree\nFrog", "photo": "assets/PTF.png", "species": "Litoria peronii",
+     "video": "assets/PTF_resized.mp4", "preview": "assets/PTF_spec_safe3_preview.jpg", "id": "ptf"},
+    {"name": "Pobblebonk\nFrog", "photo": "assets/PBF.png", "species": "Limnodynastes dumerili",
+     "video": "assets/PBF_resized.mp4", "preview": "assets/PBF_spec_safe3_preview.jpg", "id": "pbf"},
+    {"name": "Common\nFroglet", "photo": "assets/CF.png", "species": "Crinia signifera",
+     "video": "assets/CF_resized.mp4", "preview": "assets/CF_spec_safe3_preview.jpg", "id": "cf"},
+    {"name": "Common Spadefoot\nToad", "photo": "assets/CSFT.png", "species": "Neobatrachus sudelli",
+     "video": "assets/CSFT_resized.mp4", "preview": "assets/CSFT_spec_safe3_preview.jpg", "id": "csft"},
+    {"name": "Eastern Sign-bearing\nFroglet", "photo": "assets/ESBF.png", "species": "Geocrinia victoriana",
+     "video": "assets/ESBF_resized.mp4", "preview": "assets/ESBF_spec_safe3_preview.jpg", "id": "esbf"},
+    {"name": "Spotted Marsh\nFrog", "photo": "assets/SMF.png", "species": "Limnodynastes tasmaniensis",
+     "video": "assets/SMF_resized.mp4", "preview": "assets/SMF_spec_safe3_preview.jpg", "id": "smf"},
+]
 
 
-## local assets folder
-app.add_static_files('/assets', Path(__file__).parent / 'assets')
-
-## def helper function 
-def resource_path(rel_path: str) -> str:
-    # return proper URL path for assets
-    if rel_path.startswith('assets/'):
-        rel_path = rel_path.replace('assets/', '', 1)
-    return f'/assets/{rel_path}'
+class RoundedButton(Button):
+    """Custom button with rounded corners matching NiceGUI style"""
+    pass
 
 
-## Frog data 
-frogs_list = [
-        {"name": "Growling Grass \nFrog", "photo": "/assets/GGF.png", "Species name": "Ranoidea (nee Litoria) raniformis",
-        "video": "/assets/GGF_resized.mp4", "preview": "/assets/GGF_spec_safe3_preview.jpg",
-        "ind_name": "Growling Grass Frog"},
-        {"name": "Southern Brown \nTree Frog", "photo": "/assets/SBTF.png", "Species name": "Litoria ewingii", 
-        "video": "/assets/SBTF_resized.mp4", "preview":"/assets/SBTF_spec_safe3_preview.jpg",
-        "ind_name": "Southern Brown Tree Frog"},
-        {"name": "Peron's Tree \nFrog", "photo": "/assets/PTF.png", "Species name": "Litoria peronii",
-        "video": "/assets/PTF_resized.mp4", "preview": "/assets/PTF_spec_safe3_preview.jpg",
-        "ind_name": "Peron's Tree Frog"},
-        {"name": "Pobblebonk \nFrog", "photo": "/assets/PBF.png", "Species name": "Limnodynastes dumerili",
-        "video": "/assets/PBF_resized.mp4", "preview": "/assets/PBF_spec_safe3_preview.jpg",
-        "ind_name": "Pobblebonk Frog"},
-        {"name": "Common \nFroglet", "photo": "/assets/CF.png", "Species name": "Crinia signifera",
-        "video": "/assets/CF_resized.mp4", "preview": "/assets/CF_spec_safe3_preview.jpg",
-        "ind_name": "Common Froglet"},
-        {"name": "Common Spadefoot \nToad", "photo": "/assets/CSFT.png", "Species name": "Neobatrachus sudelli",
-        "video": "/assets/CSFT_resized.mp4", "preview": "/assets/CSFT_spec_safe3_preview.jpg",
-        "ind_name": "Sudell's Frog"},
-        {"name": "Eastern Sign-bearing \nFroglet", "photo": "/assets/ESBF.png", "Species name" : "Geocrinia victoriana",
-        "video": "/assets/ESBF_resized.mp4", "preview": "/assets/ESBF_spec_safe3_preview.jpg",
-        "ind_name": "Eastern Sign-bearing Froglet"},
-        {"name": "Spotted Marsh \nFrog", "photo": "/assets/SMF.png", "Species name" : "Limnodynastes tasmaniensis",
-        "video": "/assets/SMF_resized.mp4", "preview": "/assets/SMF_spec_safe3_preview.jpg",
-        "ind_name": "Spotted Marsh Frog"},
-    ]
-
-
-# --- Home page ---
-@ui.page('/')
-def home_page():  
-    # Add PWA meta tags for mobile
-    ui.add_head_html('''
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-        <meta name="apple-mobile-web-app-capable" content="yes">
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-        <meta name="theme-color" content="#2E8B57">
-        <link rel="manifest" href="/manifest.json">
-        <link rel="apple-touch-icon" href="/assets/UnknownFrog.png">
-    ''')
-
-    # ✅ Set the background color for the whole page
-    ui.query('body').classes('bg-green-700')  # Tailwind green
-    ui.query('body').style('background-color: #2E8B57;')  # fallback if classes don't apply
-
-    # ✅ Title label
-    with ui.row().classes("justify-center items-center w-full"):
-        ui.label('Select a frog to see and hear its call').style(
-        'font-size: 36px; text-align: center; margin: 20px 0; color: white;'
-    )
-
-    # ✅ Responsive grid layout
-
-    with ui.grid(columns=5).style(
-        'gap: 25px; justify-items: center; align-items: start; '
-        'width: 100%; padding: 20px; max-width: 1400px; margin: 0 auto;'
-    ):
-        with ui.column().style('align-items: center; gap: 5px;'):
-            with ui.button(color='transparent', on_click=lambda: ui.navigate.to('/instructions')).style(
-                        'padding:0; border:none; height: 250 px; width: 250px; aspect-ratio: 1 / 1;'
-                    ):
-                        ui.image('/assets/App_overview.png').style(
-                            'width: 100%; height: 100%; object-fit: cover; border-radius: 15px; '
-                            'box-shadow: 0 4px 10px rgba(0,0,0,0.3);'
-                        )
-            ui.label("How spectrograms show sound").style(
-                    'font-size: 24px; font-weight: 500; text-align: center; color: white;'
-                )     
-        for frog in frogs_list:
-            with ui.column().style('align-items: center; gap: 5px;'):  
-                    # Button only contains the image
-                with ui.button(color='transparent',
-                    on_click=lambda f=frog: ui.navigate.to(f'/frog/{f["ind_name"]}'),).style(
-                    'padding:0; border:none; height: 250 px; width: 250px; aspect-ratio: 1 / 1;'
-                    ):
-                        ui.image(frog['photo']).style(
-                            'width: 100%; height: 100%; object-fit: cover; border-radius: 15px; '
-                            'box-shadow: 0 4px 10px rgba(0,0,0,0.3);'
-                        )
-                    
-                # Label below the button
-                ui.label(frog['name']).style(
-                    'font-size: 24px; font-weight: 500; text-align: center; color: white;'
-                )
-            
-        with ui.column().style('align-items: center; gap: 5px;'):
-            with ui.button(color='transparent', on_click=lambda: ui.navigate.to('/mystery')).style(
-                        'padding:0; border:none; height: 250 px; width: 250px; aspect-ratio: 1 / 1;'
-                    ):
-                        ui.image('/assets/UnknownFrog.png').style(
-                            'width: 100%; height: 100%; object-fit: cover; border-radius: 15px; '
-                            'box-shadow: 0 4px 10px rgba(0,0,0,0.3);'
-                        )
-            ui.label("Mystery Frog").style(
-                    'font-size: 24px; font-weight: 500; text-align: center; color: white;'
-                )     
-      
-                    
-
-    # ✅ App info button at bottom
-    ui.button('App Info', on_click=lambda: ui.navigate.to('/app_info')).props('raised')\
-        .style('font: Poppins; background-color: #4CAF50; color: white; font-size: 20px; padding: 10px 20px; margin-top: 20px;')
-
-    # ✅ Invisible triple-tap exit (top-left corner)
-    exit_state = {"taps": 0, "last_tap": None}
-
-    def triple_tap_exit(e):
-        now = datetime.now()
-        if exit_state["last_tap"] and (now - exit_state["last_tap"]).total_seconds() > 1:
-            exit_state["taps"] = 0
-        exit_state["taps"] += 1
-        exit_state["last_tap"] = now
-        if exit_state["taps"] >= 3:
-            ui.notify('Exiting app...')
-            app.shutdown()
-
-    ui.button('', on_click=triple_tap_exit).style(
-        'position: fixed; top:0px; left:0px; width:80px; height:80px; opacity:0;'
-    )
-
-
-#####################################
-# --- Instructions page ---
-@ui.page('/instructions')
-def instructions_page():
-
-    # 🌿 Background (optional, to match your theme)
-    #ui.query('body').style('background-color: #2E8B57; color: white;')
-
-    with ui.column().classes("w-full h-screen items-center justify-start bg-white"):
-        # --- Header ---
-        with ui.row().classes("items-center justify-center w-full"):
-            ui.label('Spectrograms display the frequency and amplitude of sound')\
-            .style('font-size: 32px; text-align: center; text-justify: center; margin-bottom: 10px; font-weight: bold; color: darkgreen')
-
-        # --- Top Info Boxes (Two side-by-side) ---
-        with ui.row().style('justify-content: center; gap: 200px; margin-bottom: 10px; flex-wrap: wrap;'):
-            ui.html("""
-                <div style="font-size: 22px; max-width: 500px; max-height: 300px; text-align: left;">
-                    Sounds are vibrations and the number of vibrations per second
-                    determines the <b>frequency</b> or pitch of a sound.<br>
-                    <b>Low pitch:</b> drum roll, growl<br>
-                    <b>High pitch:</b> whistle, jingling keys
-                </div>
-            """, sanitize=False)
-            ui.html("""
-                <div style="font-size: 22px; max-width: 500px; max-height: 300px; text-align: left;">
-                    The size of sound waves determines <b>amplitude</b> — the larger the wave, the louder the sound.<br>
-                    <b>Low amplitude:</b> whispering<br>
-                    <b>High amplitude:</b> yelling
-                </div>
-            """, sanitize=False)
-
-        # --- Middle Image ---
-        ui.image('/assets/example.png').classes("w-full max-w-5x1 h-auto rounded-xl shadow-md border border-gray-300")
-
-        # --- Bottom Row: Back Button + 2 Text Boxes ---
-        with ui.row().style('justify-content: center; gap: 200px; margin-top: 10px; flex-wrap: wrap;'):
-            # Back button
-            with ui.button(on_click=lambda: ui.navigate.to('/'), color='transparent').style(
-                'padding:0; border:none; width: 120px; height: 120px;'
-            ):
-                ui.image('/assets/Arrow.png').style(
-                    'width: 100%; height: 100%; object-fit: cover; border-radius: 15px; '
-                    'box-shadow: 0 4px 10px rgba(0,0,0,0.4);'
-                )
-
-            # Text boxes next to the button
-            ui.html("""
-                <div style="font-size: 22px; max-width: 300px; text-align: center;">
-                    The call in the <b>green box</b> has a higher <b>frequency</b>.
-                </div>
-            """, sanitize=False).classes("border-4 border-green-400 rounded-x6 p-6 shadow-md")
-            ui.html("""
-                <div style="font-size: 22px; max-width: 300px; text-align: center;">
-                    The call in the <b>yellow box</b> is higher in <b>amplitude</b>.
-                </div>
-            """, sanitize=False).classes("border-4 border-yellow-400 rounded-x6 p-6 shadow-md")
-            
-
-
-##########################
-# --- App Info page ---
-@ui.page('/app_info')
-def app_info_page():
-    
-    with ui.column().classes("w-full h-screen items-center justify-start bg-lightgrey"):
-
-        with ui.row().classes("justify-centre w-full"):
-            ui.label('App Info').style('font-size:36px; text-align:center; margin-bottom:0px;')
+class HomeScreen(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         
-        with ui.row().props('flat bordered').style('padding:20px; border-radius: 15px'):
-            ui.html("""
-                    <div style="font-size: 22px; max-width: 300px; text-align: center;">
-                    This app was created and designed by <b>Katie Howard</b> for the exhibition <i>‘Litoria’s Wetland World’</i>.<br><br>
-                    Sound files were provided by the Arthur Rylah Institute for Environmental Research (DEECA) and compiled with help from Louise Durkin.<br>
-                    Spectrograms were created using PASE (Python-Audio-Spectrogram-Explorer).<br><br>
-                    All photos provided by Katie Howard except for those listed below, which are used with permission from:<br>
-                    - Zak Atkins: Peron's Tree Frog<br>
-                    - Geoff Heard : Pobblebonk Frog and Spotted Marsh Frog<br>
-                    </div>
-            """, sanitize=False)
+        # Main layout
+        main = FloatLayout()
         
-        with ui.row().style('justify-content: center; gap: 10px; margin-top: 10px; flex-wrap: wrap;'):
-            # Back button
-            with ui.button(on_click=lambda: ui.navigate.to('/'), color='transparent').style(
-                'padding:0; border:none; width: 180px; height: 180px;'
-            ):
-                ui.image('/assets/Arrow.png').style(
-                    'width: 100%; height: 100%; object-fit: cover; border-radius: 15px; '
-                    'box-shadow: 0 4px 10px rgba(0,0,0,0.4);'
-                )
-
-
-#################################
-# --- Individual frog page ---
-# --- Frog Detail Page ---
-@ui.page('/frog/{frog_name}')
-def frog_detail_page(frog_name: str):
-    
-    # Simulate loading frog info
-    frogs_list = [
-        {"name": "Growling Grass \nFrog", "photo": "assets/GGF.png", "Species name": "Ranoidea (nee Litoria) raniformis",
-        "video": "assets/GGF_resized.mp4", "preview": "assets/GGF_spec_safe3_preview.jpg",
-        "ind_name": "Growling Grass Frog"},
-        {"name": "Southern Brown \nTree Frog", "photo": "assets/SBTF.png", "Species name": "Litoria ewingii", 
-        "video": "assets/SBTF_resized.mp4", "preview":"assets/SBTF_spec_safe3_preview.jpg",
-        "ind_name": "Southern Brown Tree Frog"},
-        {"name": "Peron's Tree \nFrog", "photo": "assets/PTF.png", "Species name": "Litoria peronii",
-        "video": "assets/PTF_resized.mp4", "preview": "assets/PTF_spec_safe3_preview.jpg",
-        "ind_name": "Peron's Tree Frog"},
-        {"name": "Pobblebonk \nFrog", "photo": "assets/PBF.png", "Species name": "Limnodynastes dumerili",
-        "video": "assets/PBF_resized.mp4", "preview": "assets/PBF_spec_safe3_preview.jpg",
-        "ind_name": "Pobblebonk Frog"},
-        {"name": "Common \nFroglet", "photo": "assets/CF.png", "Species name": "Crinia signifera",
-        "video": "assets/CF_resized.mp4", "preview": "assets/CF_spec_safe3_preview.jpg",
-        "ind_name": "Common Froglet"},
-        {"name": "Common Spadefoot \nToad", "photo": "assets/CSFT.png", "Species name": "Neobatrachus sudelli",
-        "video": "assets/CSFT_resized.mp4", "preview": "assets/CSFT_spec_safe3_preview.jpg",
-        "ind_name": "Sudell's Frog"},
-        {"name": "Eastern Sign-bearing \nFroglet", "photo": "assets/ESBF.png", "Species name" : "Geocrinia victoriana",
-        "video": "assets/ESBF_resized.mp4", "preview": "assets/ESBF_spec_safe3_preview.jpg",
-        "ind_name": "Eastern Sign-bearing Froglet"},
-        {"name": "Spotted Marsh \nFrog", "photo": "assets/SMF.png", "Species name" : "Limnodynastes tasmaniensis",
-        "video": "assets/SMF_resized.mp4", "preview": "assets/SMF_spec_safe3_preview.jpg",
-        "ind_name": "Spotted Marsh Frog"},
-    ]
-    frog = next((f for f in frogs_list if f['ind_name'] == frog_name), None)
-    if not frog:
-        ui.label('Frog not found!').classes('text-red-500 text-xl')
-        return
-
-    with ui.column().classes("w-full h-screen justify-center bg-white"):
-        # --- Header ---
-        with ui.row().classes('justify-center items-center w-full'):
-            ui.label(frog["ind_name"]).classes('text-3xl font-bold')
-            ui.label(frog["Species name"]).classes('text-3xl font-bold italic ml-2')
-
-
-        # --- Video (no native controls) ---
-        video = ui.video(resource_path(frog["video"])).props('preload="auto" autoplay muted controlslist="nodownload nofullscreen noremoteplayback" disablepictureinpicture controls=false').classes(
-            "w-full max-w-5x1 h-auto rounded-xl shadow-md border border-gray-300"
+        # Background color
+        with main.canvas.before:
+            Color(0.18, 0.54, 0.34, 1)
+            self.rect = Rectangle(size=main.size, pos=main.pos)
+        main.bind(size=self._update_rect, pos=self._update_rect)
+        
+        # Content container
+        content = BoxLayout(orientation='vertical', padding=[20, 20], spacing=20,
+                           size_hint=(1, 1), pos_hint={'center_x': 0.5, 'center_y': 0.5})
+        
+        # Title
+        title = Label(
+            text='Select a frog to see and hear its call',
+            size_hint=(1, 0.1),
+            font_size='36sp',
+            color=(1, 1, 1, 1),
+            halign='center',
+            valign='middle'
         )
-        # pause initially to show first frame
-        ui.run_javascript('document.querySelector("video").pause()')
-
-        play_icon = None
-        ## Controls row ---
-        with ui.row().classes('w-full justify-between items-start'):
-
+        title.bind(size=title.setter('text_size'))
+        content.add_widget(title)
+        
+        # Grid of buttons (5 columns: instructions + 8 frogs + mystery)
+        grid = GridLayout(cols=5, spacing=25, size_hint=(1, 0.8), padding=[50, 0])
+        
+        # Instructions button
+        inst_box = BoxLayout(orientation='vertical', spacing=5)
+        inst_btn = Button(background_normal='assets/App_overview.png', 
+                         background_down='assets/App_overview.png',
+                         size_hint=(1, 1))
+        inst_btn.bind(on_press=lambda x: self.manager.go_to('instructions'))
+        inst_box.add_widget(inst_btn)
+        inst_label = Label(text="How spectrograms\nshow sound", font_size='20sp', 
+                          color=(1, 1, 1, 1), size_hint=(1, 0.15), halign='center')
+        inst_label.bind(size=inst_label.setter('text_size'))
+        inst_box.add_widget(inst_label)
+        grid.add_widget(inst_box)
+        
+        # Frog buttons
+        for frog in FROGS:
+            frog_box = BoxLayout(orientation='vertical', spacing=5)
+            btn = Button(background_normal=frog['photo'], 
+                        background_down=frog['photo'],
+                        size_hint=(1, 1))
+            btn.bind(on_press=lambda x, f=frog: self.manager.show_frog(f))
+            frog_box.add_widget(btn)
             
+            lbl = Label(text=frog['name'], font_size='20sp', 
+                       color=(1, 1, 1, 1), size_hint=(1, 0.15), halign='center')
+            lbl.bind(size=lbl.setter('text_size'))
+            frog_box.add_widget(lbl)
+            grid.add_widget(frog_box)
+        
+        # Mystery frog button
+        mystery_box = BoxLayout(orientation='vertical', spacing=5)
+        mystery_btn = Button(background_normal='assets/UnknownFrog.png',
+                            background_down='assets/UnknownFrog.png',
+                            size_hint=(1, 1))
+        mystery_btn.bind(on_press=lambda x: self.manager.go_to('mystery'))
+        mystery_box.add_widget(mystery_btn)
+        mystery_label = Label(text="Mystery Frog", font_size='20sp', 
+                             color=(1, 1, 1, 1), size_hint=(1, 0.15), halign='center')
+        mystery_label.bind(size=mystery_label.setter('text_size'))
+        mystery_box.add_widget(mystery_label)
+        grid.add_widget(mystery_box)
+        
+        content.add_widget(grid)
+        
+        # App Info button
+        info_btn = Button(
+            text='App Info',
+            size_hint=(0.2, 0.08),
+            pos_hint={'center_x': 0.5},
+            background_color=(0.3, 0.69, 0.31, 1),
+            font_size='20sp'
+        )
+        info_btn.bind(on_press=lambda x: self.manager.go_to('app_info'))
+        content.add_widget(info_btn)
+        
+        main.add_widget(content)
+        self.add_widget(main)
+    
+    def _update_rect(self, instance, value):
+        self.rect.pos = instance.pos
+        self.rect.size = instance.size
 
-            # ▶️ Play button (we’ll reference it later)
-            with ui.button(color='transparent', on_click=lambda:toggle_video).style(
-            'padding:0; border:none; width:180px; height:180px;') as play_button:
-                # now assign to outer-scope variable using 'nonlocal'
-                def set_icon():
-                    nonlocal play_icon
-                    play_icon = ui.image(resource_path('PLAY.png')).style(
-                        'width:100%; height:100%; object-fit:cover; border-radius:15px; '
-                        'box-shadow:0 4px 10px rgba(0,0,0,0.4);'
-                    )
-                set_icon()
 
-            # 🐸 Frog image
-            ui.image(resource_path(frog["photo"])).classes(
-                'w-64 h-64 object-contain rounded-xl shadow-md'
-            )
-                
-            
-            # ⬅️ Back button (arrow)
-            with ui.button(on_click=lambda: ui.navigate.to('/'), color='transparent').style(
-                'padding:0; border:none; width: 180px; height: 180px;'
-            ):
-                ui.image('/assets/Arrow.png').style(
-                    'object-fit: cover; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.4);'
-                )
-
-        # --- Toggle logic ---
-        def toggle_video():
-        # toggle play/pause in browser
-            ui.run_javascript("""
-                const video = document.querySelector('video');
-                if (video.paused) { video.play(); } 
-                else { video.pause(); }
-            """)
-        # update play icon
-            if play_icon.source.endswith('PLAY.png'):
-                play_icon.source = resource_path('PAUSE.png')
+class FrogDetailScreen(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.current_frog = None
+        self.playing = False
+        
+        main = FloatLayout()
+        with main.canvas.before:
+            Color(1, 1, 1, 1)
+            self.rect = Rectangle(size=main.size, pos=main.pos)
+        main.bind(size=self._update_rect, pos=self._update_rect)
+        
+        content = BoxLayout(orientation='vertical', padding=20, spacing=10)
+        
+        # Header
+        header = BoxLayout(size_hint=(1, 0.1), spacing=10)
+        self.name_lbl = Label(font_size='28sp', color=(0, 0, 0, 1), bold=True)
+        self.species_lbl = Label(font_size='24sp', color=(0, 0, 0, 1), italic=True)
+        header.add_widget(self.name_lbl)
+        header.add_widget(self.species_lbl)
+        content.add_widget(header)
+        
+        # Video with preview thumbnail
+        self.video = Video(size_hint=(1, 0.65), state='stop', options={'eos': 'loop'})
+        content.add_widget(self.video)
+        
+        # Controls
+        controls = BoxLayout(size_hint=(1, 0.25), spacing=40, padding=[50, 10])
+        
+        # Play button
+        self.play_btn = Button(background_normal='assets/PLAY.png', 
+                               background_down='assets/PLAY.png',
+                               size_hint=(0.2, 1))
+        self.play_btn.bind(on_press=self.toggle_video)
+        controls.add_widget(self.play_btn)
+        
+        # Frog photo
+        self.frog_img = Image(size_hint=(0.3, 1))
+        controls.add_widget(self.frog_img)
+        
+        # Back button
+        back_btn = Button(background_normal='assets/Arrow.png',
+                         background_down='assets/Arrow.png',
+                         size_hint=(0.2, 1))
+        back_btn.bind(on_press=lambda x: self.go_home())
+        controls.add_widget(back_btn)
+        
+        content.add_widget(controls)
+        main.add_widget(content)
+        self.add_widget(main)
+    
+    def set_frog(self, frog):
+        self.current_frog = frog
+        self.name_lbl.text = frog['name'].replace('\n', ' ')
+        self.species_lbl.text = frog['species']
+        self.frog_img.source = frog['photo']
+        
+        # Load video - it will show first frame as thumbnail
+        video_path = Path(frog['video']).absolute()
+        if video_path.exists():
+            print(f"Loading video: {video_path}")
+            self.video.source = str(video_path)
+            # Load the video but don't play - shows first frame
+            self.video.state = 'pause'
+            Clock.schedule_once(lambda dt: setattr(self.video, 'state', 'pause'), 0.1)
+        else:
+            print(f"Video not found: {video_path}")
+        
+        self.playing = False
+        self.play_btn.background_normal = 'assets/PLAY.png'
+    
+    def toggle_video(self, instance):
+        try:
+            if self.playing:
+                self.video.state = 'pause'
+                self.play_btn.background_normal = 'assets/PLAY.png'
+                self.playing = False
             else:
-                play_icon.source = resource_path('PLAY.png')
+                self.video.state = 'play'
+                self.play_btn.background_normal = 'assets/PAUSE.png'
+                self.playing = True
+        except Exception as e:
+            print(f"Video playback error: {e}")
+            # Video might not be loaded, just toggle button state
+            self.playing = not self.playing
+            self.play_btn.background_normal = 'assets/PAUSE.png' if self.playing else 'assets/PLAY.png'
+    
+    def go_home(self):
+        try:
+            self.video.state = 'stop'
+        except:
+            pass
+        self.playing = False
+        self.manager.go_to('home')
+    
+    def _update_rect(self, instance, value):
+        self.rect.pos = instance.pos
+        self.rect.size = instance.size
+
+
+class InstructionsScreen(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         
-        play_button.on('click', toggle_video)
-
-#################################
-## -----Mystery Frog Page----##
-@ui.page('/mystery')
-def mystery_frog_page():
-
-    # Simulate loading frog info
-    frogs_list = [
-        {"name": "Growling Grass \nFrog", "photo": "assets/GGF.png", "Species name": "Ranoidea (nee Litoria) raniformis",
-        "video": "assets/GGF_resized.mp4", "preview": "assets/GGF_spec_safe3_preview.jpg",
-        "ind_name": "Growling Grass Frog"},
-        {"name": "Southern Brown \nTree Frog", "photo": "assets/SBTF.png", "Species name": "Litoria ewingii", 
-        "video": "assets/SBTF_resized.mp4", "preview":"assets/SBTF_spec_safe3_preview.jpg",
-        "ind_name": "Southern Brown Tree Frog"},
-        {"name": "Peron's Tree \nFrog", "photo": "assets/PTF.png", "Species name": "Litoria peronii",
-        "video": "assets/PTF_resized.mp4", "preview": "assets/PTF_spec_safe3_preview.jpg",
-        "ind_name": "Peron's Tree Frog"},
-        {"name": "Pobblebonk \nFrog", "photo": "assets/PBF.png", "Species name": "Limnodynastes dumerili",
-        "video": "assets/PBF_resized.mp4", "preview": "assets/PBF_spec_safe3_preview.jpg",
-        "ind_name": "Pobblebonk Frog"},
-        {"name": "Common \nFroglet", "photo": "assets/CF.png", "Species name": "Crinia signifera",
-        "video": "assets/CF_resized.mp4", "preview": "assets/CF_spec_safe3_preview.jpg",
-        "ind_name": "Common Froglet"},
-        {"name": "Common Spadefoot \nToad", "photo": "assets/CSFT.png", "Species name": "Neobatrachus sudelli",
-        "video": "assets/CSFT_resized.mp4", "preview": "assets/CSFT_spec_safe3_preview.jpg",
-        "ind_name": "Sudell's Frog"},
-        {"name": "Eastern Sign-bearing \nFroglet", "photo": "assets/ESBF.png", "Species name" : "Geocrinia victoriana",
-        "video": "assets/ESBF_resized.mp4", "preview": "assets/ESBF_spec_safe3_preview.jpg",
-        "ind_name": "Eastern Sign-bearing Froglet"},
-        {"name": "Spotted Marsh \nFrog", "photo": "assets/SMF.png", "Species name" : "Limnodynastes tasmaniensis",
-        "video": "assets/SMF_resized.mp4", "preview": "assets/SMF_spec_safe3_preview.jpg",
-        "ind_name": "Spotted Marsh Frog"},
-    ]
-
-            # --- Reactive state ---
-    state = {
-        "current_frog": random.choice(frogs_list),
-        "revealed": False,
-        "playing": False,
-        "show_try_again": False,
-    }
-
-    # --- FUNCTIONS ---
-    def build_frog_options(container, correct_frog):
-        """Generate multiple-choice answer buttons"""
-        container.clear()
-        correct_name = correct_frog["name"]
-        options = random.sample(
-            [f["name"] for f in frogs_list if f != correct_frog],
-            k=min(7, len(frogs_list) - 1)
+        main = FloatLayout()
+        with main.canvas.before:
+            Color(1, 1, 1, 1)
+            self.rect = Rectangle(size=main.size, pos=main.pos)
+        main.bind(size=self._update_rect, pos=self._update_rect)
+        
+        content = BoxLayout(orientation='vertical', padding=20, spacing=10)
+        
+        # Title
+        title = Label(
+            text='Spectrograms display the frequency and amplitude of sound',
+            size_hint=(1, 0.1),
+            font_size='28sp',
+            color=(0, 0.5, 0, 1),
+            bold=True,
+            halign='center'
         )
-        options.append(correct_name)
+        title.bind(size=title.setter('text_size'))
+        content.add_widget(title)
+        
+        # Main image
+        img = Image(source='assets/example.png', size_hint=(1, 0.7))
+        content.add_widget(img)
+        
+        # Back button
+        back_box = BoxLayout(size_hint=(1, 0.2))
+        back_btn = Button(
+            background_normal='assets/Arrow.png',
+            background_down='assets/Arrow.png',
+            size_hint=(0.15, 1),
+            pos_hint={'center_x': 0.5}
+        )
+        back_btn.bind(on_press=lambda x: self.manager.go_to('home'))
+        back_box.add_widget(Widget())
+        back_box.add_widget(back_btn)
+        back_box.add_widget(Widget())
+        content.add_widget(back_box)
+        
+        main.add_widget(content)
+        self.add_widget(main)
+    
+    def _update_rect(self, instance, value):
+        self.rect.pos = instance.pos
+        self.rect.size = instance.size
+
+
+class MysteryScreen(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.current_frog = None
+        self.revealed = False
+        self.playing = False
+        
+        main = FloatLayout()
+        with main.canvas.before:
+            Color(1, 1, 1, 1)
+            self.rect = Rectangle(size=main.size, pos=main.pos)
+        main.bind(size=self._update_rect, pos=self._update_rect)
+        
+        content = BoxLayout(orientation='vertical', padding=20, spacing=10)
+        
+        # Title
+        title = Label(
+            text='🐸 Mystery Frog Quiz',
+            size_hint=(1, 0.08),
+            font_size='32sp',
+            color=(0, 0.5, 0, 1),
+            bold=True
+        )
+        content.add_widget(title)
+        
+        # Video
+        self.video = Video(size_hint=(1, 0.5), state='stop', options={'eos': 'loop'})
+        content.add_widget(self.video)
+        
+        # Bottom section
+        bottom = BoxLayout(size_hint=(1, 0.42), spacing=20)
+        
+        # Left controls
+        controls = BoxLayout(orientation='vertical', size_hint=(0.25, 1), spacing=15)
+        
+        back_btn = Button(background_normal='assets/Arrow.png', 
+                         background_down='assets/Arrow.png')
+        back_btn.bind(on_press=lambda x: self.go_home())
+        controls.add_widget(back_btn)
+        
+        self.play_btn = Button(background_normal='assets/PLAY.png',
+                              background_down='assets/PLAY.png')
+        self.play_btn.bind(on_press=self.toggle_video)
+        controls.add_widget(self.play_btn)
+        
+        bottom.add_widget(controls)
+        
+        # Right quiz area
+        quiz_area = BoxLayout(orientation='vertical', size_hint=(0.75, 1), spacing=10)
+        
+        quiz_title = Label(text='Guess the Frog:', size_hint=(1, 0.12), 
+                          font_size='24sp', color=(0, 0, 0, 1), bold=True)
+        quiz_area.add_widget(quiz_title)
+        
+        # Answer grid
+        self.answer_grid = GridLayout(cols=2, spacing=8, size_hint=(1, 0.6))
+        quiz_area.add_widget(self.answer_grid)
+        
+        # Result
+        self.result_lbl = Label(text='', size_hint=(1, 0.15), font_size='22sp', bold=True)
+        quiz_area.add_widget(self.result_lbl)
+        
+        # Try again
+        self.try_again_btn = Button(
+            text='🔄 Try Again?',
+            size_hint=(1, 0.13),
+            background_color=(1, 0.84, 0, 1),
+            font_size='20sp',
+            opacity=0
+        )
+        self.try_again_btn.bind(on_press=lambda x: self.new_quiz())
+        quiz_area.add_widget(self.try_again_btn)
+        
+        bottom.add_widget(quiz_area)
+        content.add_widget(bottom)
+        
+        main.add_widget(content)
+        self.add_widget(main)
+    
+    def on_enter(self):
+        self.new_quiz()
+    
+    def new_quiz(self):
+        self.current_frog = random.choice(FROGS)
+        self.revealed = False
+        self.playing = False
+        
+        # Set video
+        video_path = Path(self.current_frog['video'])
+        if not video_path.exists():
+            fallback = self.current_frog['video'].replace('_mobile.mp4', '_resized.mp4')
+            self.video.source = fallback
+        else:
+            self.video.source = self.current_frog['video']
+        
+        self.video.state = 'stop'
+        self.play_btn.background_normal = 'assets/PLAY.png'
+        self.result_lbl.text = ''
+        self.try_again_btn.opacity = 0
+        
+        # Generate answers
+        self.answer_grid.clear_widgets()
+        options = random.sample([f for f in FROGS if f != self.current_frog], k=min(3, len(FROGS) - 1))
+        options.append(self.current_frog)
         random.shuffle(options)
         
-        with container:
-            with ui.grid(columns=4).classes("gap-1 justify-center mt-1"):
-                for name in options:
-                    
-                    ui.button(name, on_click=lambda _, n=name: check_answer(n, correct_name),
-                    ).classes(
-                        "bg-green-700 text-white font-semibold text-md rounded-md px-2 py-1 m-1"
-                        "hover:bg-green-800 transition-all h-16 w-63")
-                    
-                    
-    def check_answer(selected, correct):
-        """Reveal result and highlight correct answer"""
-        if state["revealed"]:
+        for frog in options:
+            btn = Button(
+                text=frog['name'],
+                background_color=(0.3, 0.69, 0.31, 1),
+                font_size='18sp'
+            )
+            btn.bind(on_press=lambda x, f=frog: self.check_answer(f))
+            self.answer_grid.add_widget(btn)
+    
+    def check_answer(self, selected):
+        if self.revealed:
             return
-        state["revealed"] = True
-        state["show_try_again"] = True
-
-        if selected == correct:
-            result_label.set_text(f"✅ Correct! It’s the {correct}.").classes("text-green-600 font-bold text-xl")
+        self.revealed = True
+        self.try_again_btn.opacity = 1
+        
+        if selected == self.current_frog:
+            self.result_lbl.text = f"✅ Correct! It's the {self.current_frog['name'].replace(chr(10), ' ')}"
+            self.result_lbl.color = (0, 0.7, 0, 1)
         else:
-            result_label.set_text(f"❌ Oops! It was the {correct}.").classes("text-red-600 font-bold text-xl")
-
-       
-    def try_again():
-        """Pick a new random frog and reset the quiz"""
-        state["current_frog"] = random.choice(frogs_list)
-        state["revealed"] = False
-        state["show_try_again"] = False  #hides the button again
-        result_label.set_text("")
-
-        # reset video
-        video.source = state["current_frog"]["video"]
-        video.run_method("pause")
-        state["playing"] = False
-        play_icon.set_source("assets/PLAY.png")
-
-        # rebuild options
-        build_frog_options(options_container, state["current_frog"])
-
-
-    def toggle_video():
-        """Play or pause the current video"""
-        if state["playing"]:
-            video.run_method("pause")
-            play_icon.set_source("assets/PLAY.png")
+            self.result_lbl.text = f"❌ Oops! It was the {self.current_frog['name'].replace(chr(10), ' ')}"
+            self.result_lbl.color = (1, 0, 0, 1)
+    
+    def toggle_video(self, instance):
+        if self.playing:
+            self.video.state = 'pause'
+            self.play_btn.background_normal = 'assets/PLAY.png'
+            self.playing = False
         else:
-            video.run_method("play")
-            play_icon.set_source("assets/PAUSE.png")
-        state["playing"] = not state["playing"]
+            self.video.state = 'play'
+            self.play_btn.background_normal = 'assets/PAUSE.png'
+            self.playing = True
+    
+    def go_home(self):
+        self.video.state = 'stop'
+        self.playing = False
+        self.manager.go_to('home')
+    
+    def _update_rect(self, instance, value):
+        self.rect.pos = instance.pos
+        self.rect.size = instance.size
 
 
-
-
-    # --- PAGE LAYOUT ---
-    with ui.column().classes("w-full h-screen items-center justify-start bg-white"):
-
-        # Header
-        ui.label("🐸 Mystery Frog Quiz").classes(
-            "text-3xl font-bold text-center text-green-800 mb-4"
+class AppInfoScreen(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        
+        main = FloatLayout()
+        with main.canvas.before:
+            Color(0.9, 0.9, 0.9, 1)
+            self.rect = Rectangle(size=main.size, pos=main.pos)
+        main.bind(size=self._update_rect, pos=self._update_rect)
+        
+        content = BoxLayout(orientation='vertical', padding=20, spacing=20)
+        
+        title = Label(text='App Info', size_hint=(1, 0.1), font_size='36sp', color=(0, 0, 0, 1), bold=True)
+        content.add_widget(title)
+        
+        info = Label(
+            text='This app was created and designed by Katie Howard\n'
+                 'for the exhibition "Litoria\'s Wetland World".\n\n'
+                 'Sound files provided by Arthur Rylah Institute\n'
+                 'Spectrograms created using PASE',
+            size_hint=(1, 0.7),
+            font_size='22sp',
+            color=(0, 0, 0, 1),
+            halign='center',
+            valign='middle'
         )
-
-        # Video (paused initially, no controls)
-        video = ui.video(state["current_frog"]["video"]).props(
-            'controls=false controlslist="nodownload nofullscreen noremoteplayback"'
-        ).classes(
-            "w-full max-w-5x1 h-auto rounded-xl shadow-md border border-gray-300"
+        info.bind(size=info.setter('text_size'))
+        content.add_widget(info)
+        
+        back_box = BoxLayout(size_hint=(1, 0.2))
+        back_btn = Button(
+            background_normal='assets/Arrow.png',
+            background_down='assets/Arrow.png',
+            size_hint=(0.15, 1),
+            pos_hint={'center_x': 0.5}
         )
-
-          # --- BOTTOM SECTION ---
-        with ui.row().classes("w-full justify-between items-start"):
-
-            # --- LEFT CONTROL STACK (Home + Play vertically stacked) ---
-            with ui.column().classes("flex-none items-center justify-center"):
-                # Home button
-                with ui.button(on_click=lambda: ui.navigate.to("/"), color="transparent").style(
-                    "padding:0; border:none; width:160px; height:160px;"
-                ):
-                    ui.image("/assets/Arrow.png").style(
-                        "width:100%; height:100%; object-fit:cover; border-radius:5px; "
-                        "box-shadow:0 4px 10px rgba(0,0,0,0.4);"
-                    )
-            # Play button
-            with ui.column().classes("flex-none items-center justify-center gap-4"):
-                with ui.button(on_click=toggle_video).classes("w-20 h-20 bg-transparent p-0 border-none").style(
-                    "padding: 0; border: none; width: 160px; height: 160px;"
-                ):
-                    play_icon = ui.image("/assets/PLAY.png").style(
-                        "width:100%; height:100%; object-fit:contain;"
-                    )
+        back_btn.bind(on_press=lambda x: self.manager.go_to('home'))
+        back_box.add_widget(Widget())
+        back_box.add_widget(back_btn)
+        back_box.add_widget(Widget())
+        content.add_widget(back_box)
+        
+        main.add_widget(content)
+        self.add_widget(main)
+    
+    def _update_rect(self, instance, value):
+        self.rect.pos = instance.pos
+        self.rect.size = instance.size
 
 
-            # --- RIGHT (Quiz section) ---
-            with ui.column().classes(
-                "flex-1 items-center justify-start p-0 bg-gray-50 rounded-lg m-0" \
-                "shadow-sm border border-gray-200"):
-                ui.label("Guess the Frog:").classes(
-                    "text-2xl font-semibold text-center text-black"
-                )
-
-                options_container = ui.column().classes("items-center justify-center")
-                build_frog_options(options_container, state["current_frog"])
-
-                result_label = ui.label("").classes("text-xl font-semibold text-center justify-left mt-1")
-
-                try_again_button = ui.button("🔄 Try Again?", on_click=try_again).classes(
-                    "bg-yellow-500 text-black font-bold text-xl mt-2 rounded-md shadow-md hover:bg-yellow-400 transition-all"
-                )
-                
-
-# --- Run the app ---
-#if __name__ in {"__main__", "__mp_main__"}:
-#    from main_activity import start_webview
-#    ui.run(host='0.0.0.0', port=8080, reload=False)
-#    start_webview()
-# --- Android WebView support ---
-if platform.system() == 'Android':
-    from main_activity import start_webview
-else:
-    # Desktop stub
-    def start_webview():
-        pass
+class FrogScreenManager(ScreenManager):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.transition = SlideTransition(duration=0.3)
+        
+        self.add_widget(HomeScreen(name='home'))
+        self.add_widget(FrogDetailScreen(name='frog'))
+        self.add_widget(InstructionsScreen(name='instructions'))
+        self.add_widget(MysteryScreen(name='mystery'))
+        self.add_widget(AppInfoScreen(name='app_info'))
+        
+        self.current = 'home'
+    
+    def show_frog(self, frog):
+        self.get_screen('frog').set_frog(frog)
+        self.current = 'frog'
+    
+    def go_to(self, screen_name):
+        self.current = screen_name
 
 
-# --- Setup for both Uvicorn (Railway/PaaS) and direct execution ---
+class FrogQuizApp(App):
+    def build(self):
+        return FrogScreenManager()
 
-# Get port from environment variable (for Railway, Render, etc.) or default to 8080
-PORT = int(os.environ.get('PORT', 8080))
 
-print(f"🐸 Starting Frog Quiz app on port {PORT}")
-print(f"Platform: {platform.system()}")
-print(f"Assets directory: {Path(__file__).parent / 'assets'}")
-
-# Initialize ui.run() for module-level (required when uvicorn loads this module)
-# This doesn't start the server yet, just configures NiceGUI properly
-ui.run(
-    host='0.0.0.0',
-    port=PORT,
-    reload=False,
-    show=False,
-    title='Frog Quiz - Educational App',
-    uvicorn_logging_level='info'
-)
-
-# When running directly (not via uvicorn)
-if __name__ in {"__main__", "__mp_main__"}:
-    if platform.system() == 'Android':
-        start_webview()
+if __name__ == '__main__':
+    FrogQuizApp().run()

@@ -12,5 +12,5 @@ COPY . .
 # Expose port
 EXPOSE 8080
 
-# Run the application
-CMD ["python", "main.py"]
+# Run the application (main_web.py is the NiceGUI web app, main.py is the Kivy APK app)
+CMD ["python", "main_web.py"]
