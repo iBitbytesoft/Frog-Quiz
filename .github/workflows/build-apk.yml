@@ -108,22 +108,48 @@ jobs:
         echo "=== Initializing Buildozer ==="
         buildozer init || echo "Already initialized"
         
-        echo "=== Copying gradle.properties to buildozer directory ==="
-        mkdir -p .buildozer/android/platform/
-        cp gradle.properties .buildozer/ || true
+        echo "=== Setting up Gradle memory configuration ==="
+        # Copy gradle.properties to project root
+        cp gradle.properties . || true
+        
+        # Ensure GRADLE_OPTS is exported
+        export GRADLE_OPTS="-Xmx6g -XX:MaxMetaspaceSize=1024m -XX:+HeapDumpOnOutOfMemoryError"
+        echo "GRADLE_OPTS=$GRADLE_OPTS" >> $GITHUB_ENV
+        
+        echo "=== Gradle configuration ==="
+        echo "GRADLE_OPTS: $GRADLE_OPTS"
+        cat gradle.properties || echo "gradle.properties not found"
         
     - name: Build APK with Buildozer (with detailed logging)
       env:
-        GRADLE_OPTS: "-Xmx6g -XX:MaxMetaspaceSize=1024m"
+        GRADLE_OPTS: "-Xmx6g -XX:MaxMetaspaceSize=1024m -XX:+HeapDumpOnOutOfMemoryError"
         CYTHON_LANGUAGE_LEVEL: "3"
+        _JAVA_OPTIONS: "-Xmx6g -XX:MaxMetaspaceSize=1024m"
       run: |
         set -e
         echo "=== Starting Buildozer Android Debug Build ==="
         echo "Build started at: $(date)"
+        echo "GRADLE_OPTS: $GRADLE_OPTS"
+        echo "_JAVA_OPTIONS: $_JAVA_OPTIONS"
+        
+        # Create gradle.properties in multiple locations to ensure it's picked up
+        echo "org.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=1024m -XX:+HeapDumpOnOutOfMemoryError" > gradle.properties
+        echo "org.gradle.parallel=true" >> gradle.properties
+        echo "org.gradle.daemon=true" >> gradle.properties
+        echo "org.gradle.caching=true" >> gradle.properties
+        
+        # Start background process to copy gradle.properties to buildozer directories
+        chmod +x setup_gradle_memory.sh
+        bash setup_gradle_memory.sh &
+        GRADLE_SETUP_PID=$!
         
         # Run buildozer with verbose output
         buildozer -v android debug 2>&1 | tee buildozer.log || {
           echo "=== BUILD FAILED ==="
+          
+          # Kill the gradle setup background process
+          kill $GRADLE_SETUP_PID 2>/dev/null || true
+          
           echo "=== Showing last 200 lines of build log ==="
           tail -n 200 buildozer.log
           

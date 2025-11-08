@@ -70,6 +70,10 @@ p4a.bootstrap = sdl2
 # (str) Branch of python-for-android to use
 p4a.branch = master
 
+# (str) Hook for gradle (inject gradle.properties with memory settings)
+android.gradle_dependencies = 
+p4a.hook = buildozer_hook.py
+
 # (bool) Accept SDK license automatically
 android.accept_sdk_license = True
 
