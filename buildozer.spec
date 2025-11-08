@@ -23,11 +23,12 @@ source.include_exts = py,png,jpg,jpeg,mp4
 
 # (list) List of inclusions using pattern matching  
 # Include all _resized.mp4 (full-size videos) for APK
-source.include_patterns = assets/*.png,assets/*.jpg,assets/*_resized.mp4,*.py
+# NOTE: Removed *.py from here to allow source.exclude_patterns to work
+source.include_patterns = assets/*.png,assets/*.jpg,assets/*_resized.mp4
 
 # (list) Source files to exclude (let empty to not exclude anything)
 # CRITICAL: Exclude main.py (NiceGUI web app) - only use main_kivy.py (Kivy Android app)
-source.exclude_patterns = main.py,buildozer_hook.py,main_activity.py,uvicorn_config.py,Procfile,Dockerfile
+source.exclude_patterns = main.py,buildozer_hook.py,main_activity.py,uvicorn_config.py,Procfile,Dockerfile,compress*.py,VIDEO_COMPRESSION_GUIDE.py
 
 # (str) Main entry point for Android (Java/Kotlin activity class name)
 # Note: Keep the Python entry filename as `main_kivy.py` in the app source,
