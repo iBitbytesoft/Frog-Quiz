@@ -22,29 +22,29 @@ def resource_path(rel_path: str) -> str:
 
 ## Frog data 
 frogs_list = [
-        {"name": "Growling Grass \nFrog", "photo": "assets/GGF.png", "Species name": "Ranoidea (nee Litoria) raniformis",
-        "video": "assets/GGF_resized.mp4", "preview": "assets/GGF_spec_safe3_preview.jpg",
+        {"name": "Growling Grass \nFrog", "photo": "/assets/GGF.png", "Species name": "Ranoidea (nee Litoria) raniformis",
+        "video": "/assets/GGF_resized.mp4", "preview": "/assets/GGF_spec_safe3_preview.jpg",
         "ind_name": "Growling Grass Frog"},
-        {"name": "Southern Brown \nTree Frog", "photo": "assets/SBTF.png", "Species name": "Litoria ewingii", 
-        "video": "assets/SBTF_resized.mp4", "preview":"assets/SBTF_spec_safe3_preview.jpg",
+        {"name": "Southern Brown \nTree Frog", "photo": "/assets/SBTF.png", "Species name": "Litoria ewingii", 
+        "video": "/assets/SBTF_resized.mp4", "preview":"/assets/SBTF_spec_safe3_preview.jpg",
         "ind_name": "Southern Brown Tree Frog"},
-        {"name": "Peron's Tree \nFrog", "photo": "assets/PTF.png", "Species name": "Litoria peronii",
-        "video": "assets/PTF_resized.mp4", "preview": "assets/PTF_spec_safe3_preview.jpg",
+        {"name": "Peron's Tree \nFrog", "photo": "/assets/PTF.png", "Species name": "Litoria peronii",
+        "video": "/assets/PTF_resized.mp4", "preview": "/assets/PTF_spec_safe3_preview.jpg",
         "ind_name": "Peron's Tree Frog"},
-        {"name": "Pobblebonk \nFrog", "photo": "assets/PBF.png", "Species name": "Limnodynastes dumerili",
-        "video": "assets/PBF_resized.mp4", "preview": "assets/PBF_spec_safe3_preview.jpg",
+        {"name": "Pobblebonk \nFrog", "photo": "/assets/PBF.png", "Species name": "Limnodynastes dumerili",
+        "video": "/assets/PBF_resized.mp4", "preview": "/assets/PBF_spec_safe3_preview.jpg",
         "ind_name": "Pobblebonk Frog"},
-        {"name": "Common \nFroglet", "photo": "assets/CF.png", "Species name": "Crinia signifera",
-        "video": "assets/CF_resized.mp4", "preview": "assets/CF_spec_safe3_preview.jpg",
+        {"name": "Common \nFroglet", "photo": "/assets/CF.png", "Species name": "Crinia signifera",
+        "video": "/assets/CF_resized.mp4", "preview": "/assets/CF_spec_safe3_preview.jpg",
         "ind_name": "Common Froglet"},
-        {"name": "Common Spadefoot \nToad", "photo": "assets/CSFT.png", "Species name": "Neobatrachus sudelli",
-        "video": "assets/CSFT_resized.mp4", "preview": "assets/CSFT_spec_safe3_preview.jpg",
+        {"name": "Common Spadefoot \nToad", "photo": "/assets/CSFT.png", "Species name": "Neobatrachus sudelli",
+        "video": "/assets/CSFT_resized.mp4", "preview": "/assets/CSFT_spec_safe3_preview.jpg",
         "ind_name": "Sudell's Frog"},
-        {"name": "Eastern Sign-bearing \nFroglet", "photo": "assets/ESBF.png", "Species name" : "Geocrinia victoriana",
-        "video": "assets/ESBF_resized.mp4", "preview": "assets/ESBF_spec_safe3_preview.jpg",
+        {"name": "Eastern Sign-bearing \nFroglet", "photo": "/assets/ESBF.png", "Species name" : "Geocrinia victoriana",
+        "video": "/assets/ESBF_resized.mp4", "preview": "/assets/ESBF_spec_safe3_preview.jpg",
         "ind_name": "Eastern Sign-bearing Froglet"},
-        {"name": "Spotted Marsh \nFrog", "photo": "assets/SMF.png", "Species name" : "Limnodynastes tasmaniensis",
-        "video": "assets/SMF_resized.mp4", "preview": "assets/SMF_spec_safe3_preview.jpg",
+        {"name": "Spotted Marsh \nFrog", "photo": "/assets/SMF.png", "Species name" : "Limnodynastes tasmaniensis",
+        "video": "/assets/SMF_resized.mp4", "preview": "/assets/SMF_spec_safe3_preview.jpg",
         "ind_name": "Spotted Marsh Frog"},
     ]
 
@@ -82,7 +82,7 @@ def home_page():
             with ui.button(color='transparent', on_click=lambda: ui.navigate.to('/instructions')).style(
                         'padding:0; border:none; height: 250 px; width: 250px; aspect-ratio: 1 / 1;'
                     ):
-                        ui.image('assets/App_overview.png').style(
+                        ui.image('/assets/App_overview.png').style(
                             'width: 100%; height: 100%; object-fit: cover; border-radius: 15px; '
                             'box-shadow: 0 4px 10px rgba(0,0,0,0.3);'
                         )
@@ -110,7 +110,7 @@ def home_page():
             with ui.button(color='transparent', on_click=lambda: ui.navigate.to('/mystery')).style(
                         'padding:0; border:none; height: 250 px; width: 250px; aspect-ratio: 1 / 1;'
                     ):
-                        ui.image('assets/UnknownFrog.png').style(
+                        ui.image('/assets/UnknownFrog.png').style(
                             'width: 100%; height: 100%; object-fit: cover; border-radius: 15px; '
                             'box-shadow: 0 4px 10px rgba(0,0,0,0.3);'
                         )
@@ -175,7 +175,7 @@ def instructions_page():
             """, sanitize=False)
 
         # --- Middle Image ---
-        ui.image('assets/example.png').classes("w-full max-w-5x1 h-auto rounded-xl shadow-md border border-gray-300")
+        ui.image('/assets/example.png').classes("w-full max-w-5x1 h-auto rounded-xl shadow-md border border-gray-300")
 
         # --- Bottom Row: Back Button + 2 Text Boxes ---
         with ui.row().style('justify-content: center; gap: 200px; margin-top: 10px; flex-wrap: wrap;'):
@@ -183,7 +183,7 @@ def instructions_page():
             with ui.button(on_click=lambda: ui.navigate.to('/'), color='transparent').style(
                 'padding:0; border:none; width: 120px; height: 120px;'
             ):
-                ui.image('assets/Arrow.png').style(
+                ui.image('/assets/Arrow.png').style(
                     'width: 100%; height: 100%; object-fit: cover; border-radius: 15px; '
                     'box-shadow: 0 4px 10px rgba(0,0,0,0.4);'
                 )
@@ -229,7 +229,7 @@ def app_info_page():
             with ui.button(on_click=lambda: ui.navigate.to('/'), color='transparent').style(
                 'padding:0; border:none; width: 180px; height: 180px;'
             ):
-                ui.image('assets/Arrow.png').style(
+                ui.image('/assets/Arrow.png').style(
                     'width: 100%; height: 100%; object-fit: cover; border-radius: 15px; '
                     'box-shadow: 0 4px 10px rgba(0,0,0,0.4);'
                 )
@@ -315,7 +315,7 @@ def frog_detail_page(frog_name: str):
             with ui.button(on_click=lambda: ui.navigate.to('/'), color='transparent').style(
                 'padding:0; border:none; width: 180px; height: 180px;'
             ):
-                ui.image('assets/Arrow.png').style(
+                ui.image('/assets/Arrow.png').style(
                     'object-fit: cover; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.4);'
                 )
 
@@ -465,7 +465,7 @@ def mystery_frog_page():
                 with ui.button(on_click=lambda: ui.navigate.to("/"), color="transparent").style(
                     "padding:0; border:none; width:160px; height:160px;"
                 ):
-                    ui.image("assets/Arrow.png").style(
+                    ui.image("/assets/Arrow.png").style(
                         "width:100%; height:100%; object-fit:cover; border-radius:5px; "
                         "box-shadow:0 4px 10px rgba(0,0,0,0.4);"
                     )
@@ -474,7 +474,7 @@ def mystery_frog_page():
                 with ui.button(on_click=toggle_video).classes("w-20 h-20 bg-transparent p-0 border-none").style(
                     "padding: 0; border: none; width: 160px; height: 160px;"
                 ):
-                    play_icon = ui.image("assets/PLAY.png").style(
+                    play_icon = ui.image("/assets/PLAY.png").style(
                         "width:100%; height:100%; object-fit:contain;"
                     )
 
