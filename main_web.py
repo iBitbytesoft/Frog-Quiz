@@ -63,63 +63,61 @@ def home_page():
     ui.query('body').classes('bg-green-700')  # Tailwind green
     ui.query('body').style('background-color: #2E8B57;')  # fallback if classes don't apply
 
-    # ✅ Title label
-    with ui.row().classes("justify-center items-center w-full"):
-        ui.label('Select a frog to see and hear its call').style(
-        'font-size: 36px; text-align: center; margin: 20px 0; color: white;'
-    )
+    # ✅ Title label - Responsive font size
+    with ui.row().classes("justify-center items-center w-full px-4"):
+        ui.label('Select a frog to see and hear its call').classes(
+            'text-xl sm:text-2xl md:text-3xl lg:text-4xl text-center text-white my-4'
+        )
 
-    # ✅ Responsive grid layout
-
-    with ui.grid(columns=5).style(
-        'gap: 25px; justify-items: center; align-items: start; '
-        'width: 100%; padding: 20px; max-width: 1400px; margin: 0 auto;'
+    # ✅ Responsive grid layout - 1 col for screens < 800px, 5 cols for larger screens
+    with ui.grid(columns=5).classes(
+        'grid-cols-1 md:grid-cols-5 '
+        'gap-4 sm:gap-6 w-full px-4 py-4 max-w-7xl mx-auto justify-items-center'
     ):
-        with ui.column().style('align-items: center; gap: 5px;'):
-            with ui.button(color='transparent', on_click=lambda: ui.navigate.to('/instructions')).style(
-                        'padding:0; border:none; height: 250 px; width: 250px; aspect-ratio: 1 / 1;'
-                    ):
-                        ui.image('/assets/App_overview.png').style(
-                            'width: 100%; height: 100%; object-fit: cover; border-radius: 15px; '
-                            'box-shadow: 0 4px 10px rgba(0,0,0,0.3);'
-                        )
-            ui.label("How spectrograms show sound").style(
-                    'font-size: 24px; font-weight: 500; text-align: center; color: white;'
-                )     
+        with ui.column().classes('items-center gap-2 w-full max-w-xs'):
+            with ui.button(color='transparent', on_click=lambda: ui.navigate.to('/instructions')).classes(
+                'p-0 border-none w-full aspect-square max-w-[250px]'
+            ):
+                ui.image('/assets/App_overview.png').classes(
+                    'w-full h-full object-cover rounded-2xl shadow-lg'
+                )
+            ui.label("How spectrograms show sound").classes(
+                'text-base sm:text-lg md:text-xl lg:text-2xl font-medium text-center text-white'
+            )     
         for frog in frogs_list:
-            with ui.column().style('align-items: center; gap: 5px;'):  
-                    # Button only contains the image
-                with ui.button(color='transparent',
-                    on_click=lambda f=frog: ui.navigate.to(f'/frog/{f["ind_name"]}'),).style(
-                    'padding:0; border:none; height: 250 px; width: 250px; aspect-ratio: 1 / 1;'
-                    ):
-                        ui.image(frog['photo']).style(
-                            'width: 100%; height: 100%; object-fit: cover; border-radius: 15px; '
-                            'box-shadow: 0 4px 10px rgba(0,0,0,0.3);'
-                        )
+            with ui.column().classes('items-center gap-2 w-full max-w-xs'):  
+                # Button only contains the image
+                with ui.button(
+                    color='transparent',
+                    on_click=lambda f=frog: ui.navigate.to(f'/frog/{f["ind_name"]}')
+                ).classes('p-0 border-none w-full aspect-square max-w-[250px]'):
+                    ui.image(frog['photo']).classes(
+                        'w-full h-full object-cover rounded-2xl shadow-lg'
+                    )
                     
                 # Label below the button
-                ui.label(frog['name']).style(
-                    'font-size: 24px; font-weight: 500; text-align: center; color: white;'
+                ui.label(frog['name']).classes(
+                    'text-base sm:text-lg md:text-xl lg:text-2xl font-medium text-center text-white'
                 )
             
-        with ui.column().style('align-items: center; gap: 5px;'):
-            with ui.button(color='transparent', on_click=lambda: ui.navigate.to('/mystery')).style(
-                        'padding:0; border:none; height: 250 px; width: 250px; aspect-ratio: 1 / 1;'
-                    ):
-                        ui.image('/assets/UnknownFrog.png').style(
-                            'width: 100%; height: 100%; object-fit: cover; border-radius: 15px; '
-                            'box-shadow: 0 4px 10px rgba(0,0,0,0.3);'
-                        )
-            ui.label("Mystery Frog").style(
-                    'font-size: 24px; font-weight: 500; text-align: center; color: white;'
-                )     
+        with ui.column().classes('items-center gap-2 w-full max-w-xs'):
+            with ui.button(color='transparent', on_click=lambda: ui.navigate.to('/mystery')).classes(
+                'p-0 border-none w-full aspect-square max-w-[250px]'
+            ):
+                ui.image('/assets/UnknownFrog.png').classes(
+                    'w-full h-full object-cover rounded-2xl shadow-lg'
+                )
+            ui.label("Mystery Frog").classes(
+                'text-base sm:text-lg md:text-xl lg:text-2xl font-medium text-center text-white'
+            )     
       
                     
 
-    # ✅ App info button at bottom
-    ui.button('App Info', on_click=lambda: ui.navigate.to('/app_info')).props('raised')\
-        .style('font: Poppins; background-color: #4CAF50; color: white; font-size: 20px; padding: 10px 20px; margin-top: 20px;')
+    # ✅ App info button at bottom - centered and responsive
+    with ui.row().classes('w-full justify-center mt-4 px-4'):
+        ui.button('App Info', on_click=lambda: ui.navigate.to('/app_info')).props('raised').classes(
+            'bg-green-600 text-white text-lg sm:text-xl px-6 py-3 rounded-lg shadow-md hover:bg-green-700'
+        )
 
     # ✅ Invisible triple-tap exit (top-left corner)
     exit_state = {"taps": 0, "last_tap": None}
@@ -147,55 +145,63 @@ def instructions_page():
     # 🌿 Background (optional, to match your theme)
     #ui.query('body').style('background-color: #2E8B57; color: white;')
 
-    with ui.column().classes("w-full h-screen items-center justify-start bg-white"):
+    with ui.column().classes("w-full min-h-screen items-center justify-start bg-white px-4 py-6"):
         # --- Header ---
-        with ui.row().classes("items-center justify-center w-full"):
-            ui.label('Spectrograms display the frequency and amplitude of sound')\
-            .style('font-size: 32px; text-align: center; text-justify: center; margin-bottom: 10px; font-weight: bold; color: darkgreen')
+        with ui.row().classes("items-center justify-center w-full mb-4"):
+            ui.label('Spectrograms display the frequency and amplitude of sound').classes(
+                'text-xl sm:text-2xl md:text-3xl text-center font-bold text-green-800'
+            )
 
-        # --- Top Info Boxes (Two side-by-side) ---
-        with ui.row().style('justify-content: center; gap: 200px; margin-bottom: 10px; flex-wrap: wrap;'):
+        # --- Top Info Boxes (Two side-by-side on desktop, stacked on mobile) ---
+        with ui.row().classes('justify-center gap-4 sm:gap-8 md:gap-12 lg:gap-20 mb-6 flex-wrap w-full'):
             ui.html("""
-                <div style="font-size: 22px; max-width: 500px; max-height: 300px; text-align: left;">
+                <div style="font-size: 18px; max-width: 500px; text-align: left;">
                     Sounds are vibrations and the number of vibrations per second
                     determines the <b>frequency</b> or pitch of a sound.<br>
                     <b>Low pitch:</b> drum roll, growl<br>
                     <b>High pitch:</b> whistle, jingling keys
                 </div>
-            """, sanitize=False)
+            """, sanitize=False).classes('text-sm sm:text-base md:text-lg lg:text-xl')
             ui.html("""
-                <div style="font-size: 22px; max-width: 500px; max-height: 300px; text-align: left;">
+                <div style="font-size: 18px; max-width: 500px; text-align: left;">
                     The size of sound waves determines <b>amplitude</b> — the larger the wave, the louder the sound.<br>
                     <b>Low amplitude:</b> whispering<br>
                     <b>High amplitude:</b> yelling
                 </div>
-            """, sanitize=False)
+            """, sanitize=False).classes('text-sm sm:text-base md:text-lg lg:text-xl')
 
-        # --- Middle Image ---
-        ui.image('/assets/example.png').classes("w-full max-w-5x1 h-auto rounded-xl shadow-md border border-gray-300")
+        # --- Middle Image - Responsive ---
+        ui.image('/assets/example.png').classes(
+            "w-full max-w-5xl h-auto rounded-xl shadow-md border border-gray-300 mb-6"
+        )
 
-        # --- Bottom Row: Back Button + 2 Text Boxes ---
-        with ui.row().style('justify-content: center; gap: 200px; margin-top: 10px; flex-wrap: wrap;'):
+        # --- Bottom Row: Back Button + 2 Text Boxes (stacked on mobile) ---
+        with ui.row().classes('justify-center items-center gap-4 sm:gap-8 md:gap-12 lg:gap-20 flex-wrap w-full'):
             # Back button
-            with ui.button(on_click=lambda: ui.navigate.to('/'), color='transparent').style(
-                'padding:0; border:none; width: 120px; height: 120px;'
+            with ui.button(on_click=lambda: ui.navigate.to('/'), color='transparent').classes(
+                'p-0 border-none w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32'
             ):
-                ui.image('/assets/Arrow.png').style(
-                    'width: 100%; height: 100%; object-fit: cover; border-radius: 15px; '
-                    'box-shadow: 0 4px 10px rgba(0,0,0,0.4);'
+                ui.image('/assets/Arrow.png').classes(
+                    'w-full h-full object-cover rounded-xl shadow-lg'
                 )
 
-            # Text boxes next to the button
+            # Text boxes next to the button (stacked on mobile)
             ui.html("""
-                <div style="font-size: 22px; max-width: 300px; text-align: center;">
+                <div style="font-size: 18px; max-width: 300px; text-align: center;">
                     The call in the <b>green box</b> has a higher <b>frequency</b>.
                 </div>
-            """, sanitize=False).classes("border-4 border-green-400 rounded-x6 p-6 shadow-md")
+            """, sanitize=False).classes(
+                "border-4 border-green-400 rounded-lg p-4 sm:p-6 shadow-md "
+                "text-sm sm:text-base md:text-lg lg:text-xl"
+            )
             ui.html("""
-                <div style="font-size: 22px; max-width: 300px; text-align: center;">
+                <div style="font-size: 18px; max-width: 300px; text-align: center;">
                     The call in the <b>yellow box</b> is higher in <b>amplitude</b>.
                 </div>
-            """, sanitize=False).classes("border-4 border-yellow-400 rounded-x6 p-6 shadow-md")
+            """, sanitize=False).classes(
+                "border-4 border-yellow-400 rounded-lg p-4 sm:p-6 shadow-md "
+                "text-sm sm:text-base md:text-lg lg:text-xl"
+            )
             
 
 
@@ -204,10 +210,10 @@ def instructions_page():
 @ui.page('/app_info')
 def app_info_page():
     
-    with ui.column().classes("w-full h-screen items-center justify-start bg-lightgrey"):
+    with ui.column().classes("w-full min-h-screen items-center justify-start bg-gray-100 px-4 py-6"):
 
-        with ui.row().classes("justify-centre w-full"):
-            ui.label('App Info').style('font-size:36px; text-align:center; margin-bottom:0px;')
+        with ui.row().classes("justify-center w-full mb-4"):
+            ui.label('App Info').classes('text-2xl sm:text-3xl md:text-4xl text-center font-bold')
         
         with ui.row().props('flat bordered').style('padding:20px; border-radius: 15px'):
             ui.html("""
@@ -386,13 +392,13 @@ def mystery_frog_page():
         random.shuffle(options)
         
         with container:
-            with ui.grid(columns=4).classes("gap-1 justify-center mt-1"):
+            with ui.grid(columns=4).classes("gap-2 justify-center mt-2 grid-cols-1 md:grid-cols-4 w-full px-2"):
                 for name in options:
                     
                     ui.button(name, on_click=lambda _, n=name: check_answer(n, correct_name),
                     ).classes(
-                        "bg-green-700 text-white font-semibold text-md rounded-md px-2 py-1 m-1"
-                        "hover:bg-green-800 transition-all h-16 w-63")
+                        "bg-green-700 text-white font-semibold text-sm md:text-md rounded-md px-2 py-2 "
+                        "hover:bg-green-800 transition-all h-auto md:h-16 w-full")
                     
                     
     def check_answer(selected, correct):
