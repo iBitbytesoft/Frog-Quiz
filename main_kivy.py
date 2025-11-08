@@ -20,8 +20,9 @@ from pathlib import Path
 import random
 import platform
 
-# Force landscape
-Window.size = (1600, 720)
+# Force landscape orientation on desktop (Android handles this via buildozer.spec)
+if platform.system() not in ['Android', 'Linux']:  # Don't set size on Android
+    Window.size = (1600, 720)
 Window.clearcolor = (0.18, 0.54, 0.34, 1)  # #2E8B57 green
 
 # Frog data - using full-size _resized.mp4 videos
