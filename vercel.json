@@ -1,0 +1,4 @@
+{
+  "note": "Vercel does not support long-running WebSocket connections required by NiceGUI.",
+  "alternative": "Use Render.com, Railway.app, or Fly.io instead. See render.yaml for deployment configuration."
+}
