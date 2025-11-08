@@ -9,9 +9,6 @@ import os
 ## local assets folder
 app.add_static_files('/assets', Path(__file__).parent / 'assets')
 
-# Add PWA manifest for "Add to Home Screen" on mobile devices
-app.add_static_files('/', Path(__file__).parent)
-
 ## def helper function 
 def resource_path(rel_path: str) -> str:
     # return proper URL path for assets
