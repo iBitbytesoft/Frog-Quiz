@@ -14,4 +14,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 8080
 
 # Command to run the app
-CMD ["python", "main2.py"]
+CMD ["python", "main_web.py"]
