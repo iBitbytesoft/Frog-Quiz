@@ -42,7 +42,7 @@ orientation = landscape
 # Note: fullscreen = 1 causes black screen on some Android devices (Mali GPU)
 # See: https://github.com/kivy/python-for-android/issues/2720
 # Change to 0 if you experience black screen issues
-fullscreen = 1
+fullscreen = 0
 
 # (list) Permissions
 android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE,ACCESS_NETWORK_STATE
