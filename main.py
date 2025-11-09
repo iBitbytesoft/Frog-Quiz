@@ -212,10 +212,19 @@ class FrogDetailScreen(Screen):
             video_path = str(Path(frog['video']).absolute())
         
         print(f"Loading video: {video_path}")
+        
+        # Stop any currently playing video first
+        try:
+            self.video.state = 'stop'
+            self.video.unload()
+        except:
+            pass
+        
+        # Load new video
         self.video.source = video_path
-        # Load the video but don't play - shows first frame
-        self.video.state = 'pause'
-        Clock.schedule_once(lambda dt: setattr(self.video, 'state', 'pause'), 0.1)
+        
+        # Don't try to load video immediately - wait for user to play
+        self.video.state = 'stop'
         
         self.playing = False
         self.play_btn.background_normal = 'assets/PLAY.png'
@@ -227,7 +236,13 @@ class FrogDetailScreen(Screen):
                 self.play_btn.background_normal = 'assets/PLAY.png'
                 self.playing = False
             else:
-                self.video.state = 'play'
+                # Load and play video when user clicks play
+                if self.video.state == 'stop':
+                    self.video.state = 'play'
+                    # Give it a moment to start loading
+                    Clock.schedule_once(lambda dt: setattr(self.video, 'state', 'play'), 0.1)
+                else:
+                    self.video.state = 'play'
                 self.play_btn.background_normal = 'assets/PAUSE.png'
                 self.playing = True
         except Exception as e:
@@ -394,6 +409,15 @@ class MysteryScreen(Screen):
             video_path = str(Path(self.current_frog['video']).absolute())
         
         print(f"Loading quiz video: {video_path}")
+        
+        # Stop any currently playing video first
+        try:
+            self.video.state = 'stop'
+            self.video.unload()
+        except:
+            pass
+        
+        # Load new video
         self.video.source = video_path
         self.video.state = 'stop'
         self.play_btn.background_normal = 'assets/PLAY.png'
@@ -429,17 +453,32 @@ class MysteryScreen(Screen):
             self.result_lbl.color = (1, 0, 0, 1)
     
     def toggle_video(self, instance):
-        if self.playing:
-            self.video.state = 'pause'
-            self.play_btn.background_normal = 'assets/PLAY.png'
-            self.playing = False
-        else:
-            self.video.state = 'play'
-            self.play_btn.background_normal = 'assets/PAUSE.png'
-            self.playing = True
+        try:
+            if self.playing:
+                self.video.state = 'pause'
+                self.play_btn.background_normal = 'assets/PLAY.png'
+                self.playing = False
+            else:
+                # Load and play video when user clicks play
+                if self.video.state == 'stop':
+                    self.video.state = 'play'
+                    # Give it a moment to start loading
+                    Clock.schedule_once(lambda dt: setattr(self.video, 'state', 'play'), 0.1)
+                else:
+                    self.video.state = 'play'
+                self.play_btn.background_normal = 'assets/PAUSE.png'
+                self.playing = True
+        except Exception as e:
+            print(f"Quiz video playback error: {e}")
+            self.playing = not self.playing
+            self.play_btn.background_normal = 'assets/PAUSE.png' if self.playing else 'assets/PLAY.png'
     
     def go_home(self):
-        self.video.state = 'stop'
+        try:
+            self.video.state = 'stop'
+            self.video.unload()
+        except:
+            pass
         self.playing = False
         self.manager.go_to('home')
     
@@ -521,7 +560,21 @@ class FrogScreenManager(ScreenManager):
 
 class FrogQuizApp(App):
     def build(self):
-        return FrogScreenManager()
+        sm = FrogScreenManager()
+        # Force UI refresh after launch to fix blank screen issue
+        Clock.schedule_once(lambda dt: self._force_refresh(sm), 0.5)
+        return sm
+    
+    def _force_refresh(self, sm):
+        """Force a screen refresh to fix blank screen on Android launch"""
+        try:
+            current_screen = sm.current
+            # Trigger a layout update by briefly switching screens
+            sm.current = 'home'
+            if current_screen != 'home':
+                Clock.schedule_once(lambda dt: setattr(sm, 'current', current_screen), 0.1)
+        except:
+            pass
 
 
 if __name__ == '__main__':
