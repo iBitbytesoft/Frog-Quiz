@@ -28,30 +28,18 @@ class FrogDetailScreen(Screen):
         
         content = BoxLayout(orientation='vertical', padding=20, spacing=10)
         
-        # Header - Centered with both name and species
-        header = BoxLayout(size_hint=(1, 0.1), orientation='horizontal', spacing=10)
-        header_content = BoxLayout(size_hint=(None, 1), spacing=10)
-        header_content.bind(minimum_width=header_content.setter('width'))
-        
-        self.name_lbl = Label(font_size='28sp', color=(0, 0, 0, 1), bold=True, size_hint=(None, 1))
-        self.name_lbl.bind(texture_size=self.name_lbl.setter('size'))
-        
-        self.species_lbl = Label(font_size='24sp', color=(0, 0, 0, 1), italic=True, size_hint=(None, 1))
-        self.species_lbl.bind(texture_size=self.species_lbl.setter('size'))
-        
-        # Separator between name and species
-        separator = Label(text=' - ', font_size='24sp', color=(0, 0, 0, 1), size_hint=(None, 1))
-        separator.bind(texture_size=separator.setter('size'))
-        
-        header_content.add_widget(self.name_lbl)
-        header_content.add_widget(separator)
-        header_content.add_widget(self.species_lbl)
-        
-        # Center the header content
-        header.add_widget(Widget())  # Left spacer
-        header.add_widget(header_content)
-        header.add_widget(Widget())  # Right spacer
-        
+        # Header
+        header = BoxLayout(size_hint=(1, 0.1), spacing=10)
+        header.add_widget(Widget(size_hint=(0.25, 1)))  # Left spacer
+        self.name_lbl = Label(font_size='28sp', color=(0, 0, 0, 1), bold=True, 
+                             size_hint=(0.25, 1), halign='center', valign='middle')
+        self.name_lbl.bind(size=self.name_lbl.setter('text_size'))
+        self.species_lbl = Label(font_size='24sp', color=(0, 0, 0, 1), italic=True,
+                                size_hint=(0.25, 1), halign='center', valign='middle')
+        self.species_lbl.bind(size=self.species_lbl.setter('text_size'))
+        header.add_widget(self.name_lbl)
+        header.add_widget(self.species_lbl)
+        header.add_widget(Widget(size_hint=(0.25, 1)))  # Right spacer
         content.add_widget(header)
         
         # Video with preview thumbnail
@@ -61,27 +49,39 @@ class FrogDetailScreen(Screen):
         # Controls
         controls = BoxLayout(size_hint=(1, 0.25), spacing=40, padding=[50, 10])
         
-        # Play button
+        # Play button - maintain square aspect
+        play_container = BoxLayout(size_hint=(0.2, 1))
         self.play_btn = Button(background_normal='assets/PLAY.png', 
                                background_down='assets/PLAY.png',
-                               size_hint=(0.2, 1))
+                               size_hint=(None, None))
         self.play_btn.bind(on_press=self.toggle_video)
-        controls.add_widget(self.play_btn)
+        play_container.bind(size=lambda i, v: self._update_button_size(self.play_btn, i))
+        play_container.add_widget(self.play_btn)
+        controls.add_widget(play_container)
         
         # Frog photo
         self.frog_img = Image(size_hint=(0.3, 1))
         controls.add_widget(self.frog_img)
         
-        # Back button
+        # Back button - maintain square aspect
+        back_container = BoxLayout(size_hint=(0.2, 1))
         back_btn = Button(background_normal='assets/Arrow.png',
                          background_down='assets/Arrow.png',
-                         size_hint=(0.2, 1))
+                         size_hint=(None, None))
         back_btn.bind(on_press=lambda x: self.go_home())
-        controls.add_widget(back_btn)
+        back_container.bind(size=lambda i, v: self._update_button_size(back_btn, i))
+        back_container.add_widget(back_btn)
+        controls.add_widget(back_container)
         
         content.add_widget(controls)
         main.add_widget(content)
         self.add_widget(main)
+    
+    def _update_button_size(self, button, container):
+        """Maintain square aspect ratio for buttons"""
+        if container.width > 0 and container.height > 0:
+            size = min(container.width, container.height)
+            button.size = (size, size)
     
     def set_frog(self, frog):
         self.current_frog = frog
@@ -104,7 +104,7 @@ class FrogDetailScreen(Screen):
         self.play_btn.background_normal = 'assets/PLAY.png'
     
     def _load_video(self, video_file):
-        """Load video with proper path handling and ensure first frame is visible"""
+        """Load video with proper path handling and show first frame"""
         try:
             # Use relative path for Android, absolute for desktop
             if platform.system() == 'Android' or 'ANDROID_ARGUMENT' in os.environ:
@@ -123,22 +123,28 @@ class FrogDetailScreen(Screen):
             # Set video source
             self.video.source = video_path
             
-            # Load video but keep it paused to show first frame
-            # This ensures the video preview is visible immediately
+            # Workaround for Kivy video thumbnail issue #7755
+            # Need to play the video briefly to load first frame, then pause
             self.video.state = 'play'
-            Clock.schedule_once(lambda dt: self._pause_at_start(), 0.1)
+            self.video.volume = 0  # Mute during thumbnail load
+            
+            # Schedule pause after video has time to load first frame
+            Clock.schedule_once(lambda dt: self._pause_at_first_frame(), 0.3)
             
         except Exception as e:
             print(f"Error loading video: {e}")
     
-    def _pause_at_start(self):
-        """Pause video after brief play to load first frame"""
+    def _pause_at_first_frame(self):
+        """Pause video after first frame loads to show thumbnail"""
         try:
+            # Seek to start and pause to show first frame
+            if hasattr(self.video, 'seek'):
+                self.video.seek(0)
             self.video.state = 'pause'
-            # Seek to beginning to ensure first frame is shown
-            self.video.seek(0)
+            self.video.volume = 1.0  # Restore volume for playback
+            print("Video paused at first frame")
         except Exception as e:
-            print(f"Error pausing video at start: {e}")
+            print(f"Error pausing video: {e}")
     
     def toggle_video(self, instance):
         """Toggle video playback with improved error handling"""

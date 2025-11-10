@@ -1,6 +1,8 @@
 """Lazy loading screen manager for improved startup performance"""
 import json
 import importlib
+import os
+from pathlib import Path
 from kivy.uix.screenmanager import ScreenManager, SlideTransition
 
 
@@ -14,8 +16,9 @@ class LazyScreenManager(ScreenManager):
         super().__init__(**kwargs)
         self.transition = SlideTransition(duration=0.3)
         
-        # Load screen registry from JSON
-        with open('screens.json', 'r') as f:
+        # Load screen registry from JSON (use absolute path)
+        screens_json_path = Path(__file__).parent / 'screens.json'
+        with open(screens_json_path, 'r') as f:
             self.screen_registry = json.load(f)
         
         # Track which screens have been loaded
