@@ -30,14 +30,16 @@ class MysteryScreen(Screen):
         
         content = BoxLayout(orientation='vertical', padding=20, spacing=10)
         
-        # Title
+        # Title - Using "Mystery Frog Quiz" instead of emoji for Android
         title = Label(
-            text='🐸 Mystery Frog Quiz',
+            text='Mystery Frog Quiz',
             size_hint=(1, 0.08),
             font_size='32sp',
             color=(0, 0.5, 0, 1),
-            bold=True
+            bold=True,
+            halign='center'
         )
+        title.bind(size=title.setter('text_size'))
         content.add_widget(title)
         
         # Video
@@ -69,7 +71,7 @@ class MysteryScreen(Screen):
                           font_size='24sp', color=(0, 0, 0, 1), bold=True)
         quiz_area.add_widget(quiz_title)
         
-        # Answer grid
+        # Answer grid - 2 columns for all 8 frogs (4 rows x 2 columns)
         self.answer_grid = GridLayout(cols=2, spacing=8, size_hint=(1, 0.6))
         quiz_area.add_widget(self.answer_grid)
         
@@ -77,9 +79,9 @@ class MysteryScreen(Screen):
         self.result_lbl = Label(text='', size_hint=(1, 0.15), font_size='22sp', bold=True)
         quiz_area.add_widget(self.result_lbl)
         
-        # Try again
+        # Try again - Using text instead of emoji for Android compatibility
         self.try_again_btn = Button(
-            text='🔄 Try Again?',
+            text='Try Again?',
             size_hint=(1, 0.13),
             background_color=(1, 0.84, 0, 1),
             font_size='20sp',
@@ -117,23 +119,31 @@ class MysteryScreen(Screen):
         self.result_lbl.text = ''
         self.try_again_btn.opacity = 0
         
-        # Generate answers
+        # Generate answers - Show ALL 8 frogs like Windows version
         self.answer_grid.clear_widgets()
-        options = random.sample([f for f in FROGS if f != self.current_frog], k=min(3, len(FROGS) - 1))
-        options.append(self.current_frog)
+        
+        # Get all frogs and shuffle them for random order
+        options = list(FROGS)
         random.shuffle(options)
+        
+        # Store button references for color feedback
+        self.answer_buttons = []
         
         for frog in options:
             btn = Button(
                 text=frog['name'],
-                background_color=(0.3, 0.69, 0.31, 1),
-                font_size='18sp'
+                background_color=(0.3, 0.69, 0.31, 1),  # Green background
+                font_size='18sp',
+                background_normal='',  # Remove default background
+                background_down=''
             )
+            btn.frog_data = frog  # Store frog data on button
             btn.bind(on_press=lambda x, f=frog: self.check_answer(f))
+            self.answer_buttons.append(btn)
             self.answer_grid.add_widget(btn)
     
     def _load_quiz_video(self):
-        """Load quiz video with proper path handling"""
+        """Load quiz video with proper path handling and ensure first frame is visible"""
         try:
             # Use relative path for Android, absolute for desktop
             if platform.system() == 'Android' or 'ANDROID_ARGUMENT' in os.environ:
@@ -143,12 +153,25 @@ class MysteryScreen(Screen):
             
             print(f"Loading quiz video: {video_path}")
             
-            # Set video source (don't play yet)
+            # Set video source
             self.video.source = video_path
-            self.video.state = 'stop'
+            
+            # Load video but keep it paused to show first frame
+            # This ensures the video preview is visible immediately
+            self.video.state = 'play'
+            Clock.schedule_once(lambda dt: self._pause_quiz_at_start(), 0.1)
             
         except Exception as e:
             print(f"Error loading quiz video: {e}")
+    
+    def _pause_quiz_at_start(self):
+        """Pause video after brief play to load first frame"""
+        try:
+            self.video.state = 'pause'
+            # Seek to beginning to ensure first frame is shown
+            self.video.seek(0)
+        except Exception as e:
+            print(f"Error pausing quiz video at start: {e}")
     
     def check_answer(self, selected):
         if self.revealed:
@@ -156,11 +179,32 @@ class MysteryScreen(Screen):
         self.revealed = True
         self.try_again_btn.opacity = 1
         
+        # Update button colors based on selection (matching Windows version)
+        for btn in self.answer_buttons:
+            if btn.frog_data == selected and selected == self.current_frog:
+                # Correct answer selected - Yellow background
+                btn.background_color = (1, 0.96, 0.16, 1)  # Yellow like Windows
+                btn.color = (0, 0, 0, 1)  # Black text
+            elif btn.frog_data == selected and selected != self.current_frog:
+                # Wrong answer selected - Black border
+                from kivy.graphics import Line, Color as GraphicsColor
+                with btn.canvas.after:
+                    GraphicsColor(0, 0, 0, 1)
+                    Line(rectangle=(btn.x, btn.y, btn.width, btn.height), width=3)
+            elif btn.frog_data == self.current_frog:
+                # Correct answer (not selected) - Yellow background
+                btn.background_color = (1, 0.96, 0.16, 1)  # Yellow
+                btn.color = (0, 0, 0, 1)  # Black text
+            else:
+                # Other wrong answers - fade them out
+                btn.background_color = (0.2, 0.2, 0.2, 0.3)  # Grayed out
+        
+        # Update result label with checkmark/cross (use text symbols for Android)
         if selected == self.current_frog:
-            self.result_lbl.text = f"✅ Correct! It's the {self.current_frog['name'].replace(chr(10), ' ')}"
+            self.result_lbl.text = f"✓ Correct! It's the {self.current_frog['name'].replace(chr(10), ' ')}"
             self.result_lbl.color = (0, 0.7, 0, 1)
         else:
-            self.result_lbl.text = f"❌ Oops! It was the {self.current_frog['name'].replace(chr(10), ' ')}"
+            self.result_lbl.text = f"✗ Oops! It was the {self.current_frog['name'].replace(chr(10), ' ')}"
             self.result_lbl.color = (1, 0, 0, 1)
     
     def toggle_video(self, instance):

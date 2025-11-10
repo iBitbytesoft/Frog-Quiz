@@ -6,6 +6,7 @@ from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.image import Image
 from kivy.uix.video import Video
+from kivy.uix.widget import Widget
 from kivy.clock import Clock
 from kivy.graphics import Color, Rectangle
 from pathlib import Path
@@ -27,12 +28,30 @@ class FrogDetailScreen(Screen):
         
         content = BoxLayout(orientation='vertical', padding=20, spacing=10)
         
-        # Header
-        header = BoxLayout(size_hint=(1, 0.1), spacing=10)
-        self.name_lbl = Label(font_size='28sp', color=(0, 0, 0, 1), bold=True)
-        self.species_lbl = Label(font_size='24sp', color=(0, 0, 0, 1), italic=True)
-        header.add_widget(self.name_lbl)
-        header.add_widget(self.species_lbl)
+        # Header - Centered with both name and species
+        header = BoxLayout(size_hint=(1, 0.1), orientation='horizontal', spacing=10)
+        header_content = BoxLayout(size_hint=(None, 1), spacing=10)
+        header_content.bind(minimum_width=header_content.setter('width'))
+        
+        self.name_lbl = Label(font_size='28sp', color=(0, 0, 0, 1), bold=True, size_hint=(None, 1))
+        self.name_lbl.bind(texture_size=self.name_lbl.setter('size'))
+        
+        self.species_lbl = Label(font_size='24sp', color=(0, 0, 0, 1), italic=True, size_hint=(None, 1))
+        self.species_lbl.bind(texture_size=self.species_lbl.setter('size'))
+        
+        # Separator between name and species
+        separator = Label(text=' - ', font_size='24sp', color=(0, 0, 0, 1), size_hint=(None, 1))
+        separator.bind(texture_size=separator.setter('size'))
+        
+        header_content.add_widget(self.name_lbl)
+        header_content.add_widget(separator)
+        header_content.add_widget(self.species_lbl)
+        
+        # Center the header content
+        header.add_widget(Widget())  # Left spacer
+        header.add_widget(header_content)
+        header.add_widget(Widget())  # Right spacer
+        
         content.add_widget(header)
         
         # Video with preview thumbnail
@@ -85,7 +104,7 @@ class FrogDetailScreen(Screen):
         self.play_btn.background_normal = 'assets/PLAY.png'
     
     def _load_video(self, video_file):
-        """Load video with proper path handling"""
+        """Load video with proper path handling and ensure first frame is visible"""
         try:
             # Use relative path for Android, absolute for desktop
             if platform.system() == 'Android' or 'ANDROID_ARGUMENT' in os.environ:
@@ -101,12 +120,25 @@ class FrogDetailScreen(Screen):
             else:
                 print(f"✗ Video file NOT found: {video_path}")
             
-            # Set video source (don't play yet)
+            # Set video source
             self.video.source = video_path
-            self.video.state = 'stop'
+            
+            # Load video but keep it paused to show first frame
+            # This ensures the video preview is visible immediately
+            self.video.state = 'play'
+            Clock.schedule_once(lambda dt: self._pause_at_start(), 0.1)
             
         except Exception as e:
             print(f"Error loading video: {e}")
+    
+    def _pause_at_start(self):
+        """Pause video after brief play to load first frame"""
+        try:
+            self.video.state = 'pause'
+            # Seek to beginning to ensure first frame is shown
+            self.video.seek(0)
+        except Exception as e:
+            print(f"Error pausing video at start: {e}")
     
     def toggle_video(self, instance):
         """Toggle video playback with improved error handling"""

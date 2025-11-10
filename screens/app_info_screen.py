@@ -23,19 +23,34 @@ class AppInfoScreen(Screen):
         title = Label(text='App Info', size_hint=(1, 0.1), font_size='36sp', color=(0, 0, 0, 1), bold=True)
         content.add_widget(title)
         
+        # Info text box with border and padding (matching Windows version)
+        info_container = BoxLayout(size_hint=(1, 0.7), padding=10)
+        with info_container.canvas.before:
+            Color(0.3, 0.54, 0, 1)  # Green border color
+            info_container.border_rect = Rectangle(size=info_container.size, pos=info_container.pos)
+        
+        def update_info_border(instance, value):
+            info_container.border_rect.pos = instance.pos
+            info_container.border_rect.size = instance.size
+        info_container.bind(size=update_info_border, pos=update_info_border)
+        
         info = Label(
-            text='This app was created and designed by Katie Howard\n'
-                 'for the exhibition "Litoria\'s Wetland World".\n\n'
-                 'Sound files provided by Arthur Rylah Institute\n'
-                 'Spectrograms created using PASE',
-            size_hint=(1, 0.7),
+            text='This APP was designed and created by Katie Howard for the exhibition "Litoria\'s Wetland World".\n\n'
+                 'Sound files were provided by the Arthur Rylah Institute for Environmental Research (DEECA) '
+                 'and compiled with help from Louise Durkin.\n'
+                 'The spectrograms were created using PASE (Python-Audio-Spectrogram-Explorer).\n\n'
+                 'All photos were taken by Katie Howard except for those listed below, which are used with permission from:\n'
+                 '- Zak Atkins: Peron\'s Tree Frog\n'
+                 '- Geoff Heard: Pobblebonk Frog and Spotted Marsh Frog',
             font_size='22sp',
             color=(0, 0, 0, 1),
-            halign='center',
-            valign='middle'
+            halign='left',
+            valign='top',
+            markup=True
         )
         info.bind(size=info.setter('text_size'))
-        content.add_widget(info)
+        info_container.add_widget(info)
+        content.add_widget(info_container)
         
         back_box = BoxLayout(size_hint=(1, 0.2))
         back_btn = Button(
