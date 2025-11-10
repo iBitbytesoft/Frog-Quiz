@@ -144,8 +144,13 @@ class MysteryScreen(Screen):
                 text=frog['name'],
                 background_color=(0.3, 0.69, 0.31, 1),
                 background_normal='',  # Required for background_color to work
-                font_size='18sp'
+                font_size='14sp',
+                text_size=(None, None),
+                halign='center',
+                valign='middle',
+                padding=(5, 5)
             )
+            btn.bind(width=lambda b, w: setattr(b, 'text_size', (w - 10, None)))
             btn.frog_data = frog  # Store frog reference on button
             btn.bind(on_press=lambda x, f=frog: self.check_answer(f))
             self.answer_grid.add_widget(btn)

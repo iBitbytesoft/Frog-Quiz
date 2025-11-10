@@ -1,5 +1,6 @@
 """App info screen"""
 from kivy.uix.screenmanager import Screen
+from kivy.uix.scrollview import ScrollView
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.button import Button
@@ -18,10 +19,19 @@ class AppInfoScreen(Screen):
             self.rect = Rectangle(size=main.size, pos=main.pos)
         main.bind(size=self._update_rect, pos=self._update_rect)
         
-        content = BoxLayout(orientation='vertical', padding=20, spacing=20)
+        # Main container
+        container = BoxLayout(orientation='vertical', padding=20, spacing=20)
         
+        # Title (fixed at top)
         title = Label(text='App Info', size_hint=(1, 0.1), font_size='36sp', color=(0, 0, 0, 1), bold=True)
-        content.add_widget(title)
+        container.add_widget(title)
+        
+        # Scrollable content area
+        scroll = ScrollView(size_hint=(1, 0.75), do_scroll_x=False, do_scroll_y=True)
+        
+        # Content inside scroll view
+        scroll_content = BoxLayout(orientation='vertical', size_hint_y=None, padding=(10, 10), spacing=10)
+        scroll_content.bind(minimum_height=scroll_content.setter('height'))
         
         info = Label(
             text='This app was created and designed by Katie Howard\n'
@@ -35,16 +45,22 @@ class AppInfoScreen(Screen):
                  'listed below, which are used with permission from:\n'
                  '- Zak Atkins: Peron\'s Tree Frog\n'
                  '- Geoff Heard: Pobblebonk Frog and Spotted Marsh Frog',
-            size_hint=(1, 0.7),
-            font_size='20sp',
+            size_hint_y=None,
+            font_size='18sp',
             color=(0, 0, 0, 1),
             halign='center',
-            valign='middle'
+            valign='top',
+            padding=(20, 20)
         )
-        info.bind(size=info.setter('text_size'))
-        content.add_widget(info)
+        info.bind(width=lambda l, w: setattr(l, 'text_size', (w - 40, None)))
+        info.bind(texture_size=lambda l, s: setattr(l, 'height', s[1]))
         
-        back_box = BoxLayout(size_hint=(1, 0.2))
+        scroll_content.add_widget(info)
+        scroll.add_widget(scroll_content)
+        container.add_widget(scroll)
+        
+        # Back button at bottom (fixed)
+        back_box = BoxLayout(size_hint=(1, 0.15))
         back_btn = Button(
             background_normal='assets/Arrow.png',
             background_down='assets/Arrow.png',
@@ -55,9 +71,9 @@ class AppInfoScreen(Screen):
         back_box.add_widget(Widget())
         back_box.add_widget(back_btn)
         back_box.add_widget(Widget())
-        content.add_widget(back_box)
+        container.add_widget(back_box)
         
-        main.add_widget(content)
+        main.add_widget(container)
         self.add_widget(main)
     
     def _update_rect(self, instance, value):

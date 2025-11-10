@@ -30,16 +30,18 @@ class FrogDetailScreen(Screen):
         
         # Header
         header = BoxLayout(size_hint=(1, 0.1), spacing=10)
-        header.add_widget(Widget(size_hint=(0.25, 1)))  # Left spacer
-        self.name_lbl = Label(font_size='28sp', color=(0, 0, 0, 1), bold=True, 
-                             size_hint=(0.25, 1), halign='center', valign='middle')
-        self.name_lbl.bind(size=self.name_lbl.setter('text_size'))
-        self.species_lbl = Label(font_size='24sp', color=(0, 0, 0, 1), italic=True,
-                                size_hint=(0.25, 1), halign='center', valign='middle')
-        self.species_lbl.bind(size=self.species_lbl.setter('text_size'))
+        header.add_widget(Widget(size_hint=(0.15, 1)))  # Left spacer
+        self.name_lbl = Label(font_size='24sp', color=(0, 0, 0, 1), bold=True, 
+                             size_hint=(0.35, 1), halign='center', valign='middle',
+                             text_size=(None, None), max_lines=2)
+        self.name_lbl.bind(width=lambda l, w: setattr(l, 'text_size', (w - 10, None)))
+        self.species_lbl = Label(font_size='20sp', color=(0, 0, 0, 1), italic=True,
+                                size_hint=(0.35, 1), halign='center', valign='middle',
+                                text_size=(None, None), max_lines=2)
+        self.species_lbl.bind(width=lambda l, w: setattr(l, 'text_size', (w - 10, None)))
         header.add_widget(self.name_lbl)
         header.add_widget(self.species_lbl)
-        header.add_widget(Widget(size_hint=(0.25, 1)))  # Right spacer
+        header.add_widget(Widget(size_hint=(0.15, 1)))  # Right spacer
         content.add_widget(header)
         
         # Video with preview thumbnail

@@ -44,42 +44,62 @@ class HomeScreen(Screen):
         
         # Instructions button
         inst_box = BoxLayout(orientation='vertical', spacing=5)
+        
+        # Button container to maintain alignment
+        inst_btn_container = BoxLayout(size_hint=(1, 0.85))
         inst_btn = Button(background_normal='assets/App_overview.png', 
                          background_down='assets/App_overview.png',
-                         size_hint=(1, 0.85))
+                         size_hint=(None, None))
         inst_btn.bind(on_press=lambda x: self.manager.go_to('instructions'))
-        inst_box.add_widget(inst_btn)
-        inst_label = Label(text="How spectrograms\nshow sound", font_size='18sp', 
-                          color=(1, 1, 1, 1), size_hint=(1, 0.15), halign='center', valign='top')
-        inst_label.bind(size=inst_label.setter('text_size'))
+        inst_btn_container.bind(size=lambda i, v: self._update_frog_button_size(inst_btn, i))
+        inst_btn_container.add_widget(inst_btn)
+        inst_box.add_widget(inst_btn_container)
+        
+        inst_label = Label(text="How spectrograms\nshow sound", font_size='16sp', 
+                          color=(1, 1, 1, 1), size_hint=(1, 0.15), halign='center', valign='top',
+                          text_size=(None, None), max_lines=2)
+        inst_label.bind(width=lambda l, w: setattr(l, 'text_size', (w, None)))
         inst_box.add_widget(inst_label)
         grid.add_widget(inst_box)
         
         # Frog buttons
         for frog in FROGS:
             frog_box = BoxLayout(orientation='vertical', spacing=5)
+            
+            # Button container to maintain alignment
+            btn_container = BoxLayout(size_hint=(1, 0.85))
             btn = Button(background_normal=frog['photo'], 
                         background_down=frog['photo'],
-                        size_hint=(1, 0.85))
+                        size_hint=(None, None))
             btn.bind(on_press=lambda x, f=frog: self.manager.show_frog(f))
-            frog_box.add_widget(btn)
+            btn_container.bind(size=lambda i, v, b=btn: self._update_frog_button_size(b, i))
+            btn_container.add_widget(btn)
+            frog_box.add_widget(btn_container)
             
-            lbl = Label(text=frog['name'], font_size='18sp', 
-                       color=(1, 1, 1, 1), size_hint=(1, 0.15), halign='center', valign='top')
-            lbl.bind(size=lbl.setter('text_size'))
+            lbl = Label(text=frog['name'], font_size='16sp', 
+                       color=(1, 1, 1, 1), size_hint=(1, 0.15), halign='center', valign='top',
+                       text_size=(None, None), max_lines=2)
+            lbl.bind(width=lambda l, w: setattr(l, 'text_size', (w, None)))
             frog_box.add_widget(lbl)
             grid.add_widget(frog_box)
         
         # Mystery frog button
         mystery_box = BoxLayout(orientation='vertical', spacing=5)
+        
+        # Button container to maintain alignment
+        mystery_btn_container = BoxLayout(size_hint=(1, 0.85))
         mystery_btn = Button(background_normal='assets/UnknownFrog.png',
                             background_down='assets/UnknownFrog.png',
-                            size_hint=(1, 0.85))
+                            size_hint=(None, None))
         mystery_btn.bind(on_press=lambda x: self.manager.go_to('mystery'))
-        mystery_box.add_widget(mystery_btn)
-        mystery_label = Label(text="Mystery Frog", font_size='18sp', 
-                             color=(1, 1, 1, 1), size_hint=(1, 0.15), halign='center', valign='top')
-        mystery_label.bind(size=mystery_label.setter('text_size'))
+        mystery_btn_container.bind(size=lambda i, v: self._update_frog_button_size(mystery_btn, i))
+        mystery_btn_container.add_widget(mystery_btn)
+        mystery_box.add_widget(mystery_btn_container)
+        
+        mystery_label = Label(text="Mystery Frog", font_size='16sp', 
+                             color=(1, 1, 1, 1), size_hint=(1, 0.15), halign='center', valign='top',
+                             text_size=(None, None), max_lines=2)
+        mystery_label.bind(width=lambda l, w: setattr(l, 'text_size', (w, None)))
         mystery_box.add_widget(mystery_label)
         grid.add_widget(mystery_box)
         
@@ -100,21 +120,18 @@ class HomeScreen(Screen):
         self.add_widget(main)
         self.grid = grid
     
+    def _update_frog_button_size(self, button, container):
+        """Maintain square aspect ratio and center buttons"""
+        if container.width > 0 and container.height > 0:
+            size = min(container.width, container.height)
+            button.size = (size, size)
+            # Center the button
+            button.pos_hint = {'center_x': 0.5, 'center_y': 0.5}
+    
     def _update_grid_children(self, instance, value):
         """Ensure buttons maintain square aspect ratio"""
-        # Calculate button size based on available space
-        if instance.width > 0 and instance.height > 0:
-            available_width = (instance.width - instance.padding[0] * 2) / instance.cols
-            available_height = instance.height / 2  # 2 rows
-            button_size = min(available_width, available_height) - instance.spacing[0]
-            
-            for child in instance.children:
-                if isinstance(child, BoxLayout):
-                    # Find button widget in the box
-                    for widget in child.children:
-                        if isinstance(widget, Button):
-                            widget.size_hint = (None, None)
-                            widget.size = (button_size * 0.85, button_size * 0.85)
+        # This method is kept for compatibility but button sizing is now handled by _update_frog_button_size
+        pass
     
     def _update_rect(self, instance, value):
         self.rect.pos = instance.pos
