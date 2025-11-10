@@ -414,9 +414,12 @@ def mystery_frog_page():
         state["show_try_again"] = True
 
         if selected == correct:
-            result_label.set_text(f"✅ Correct! It’s the {correct}.").classes("text-green-600 font-bold text-xl")
+            # NiceGUI's set_text() returns None, so don't chain .classes() on it.
+            result_label.set_text(f"✅ Correct! It’s the {correct}.")
+            result_label.classes("text-green-600 font-bold text-xl")
         else:
-            result_label.set_text(f"❌ Oops! It was the {correct}.").classes("text-red-600 font-bold text-xl")
+            result_label.set_text(f"❌ Oops! It was the {correct}.")
+            result_label.classes("text-red-600 font-bold text-xl")
 
        
     def try_again():
