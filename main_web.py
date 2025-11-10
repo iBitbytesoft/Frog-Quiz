@@ -4,10 +4,18 @@ from pathlib import Path
 import random
 import platform
 import os
+import json
 
 
 ## local assets folder
 app.add_static_files('/assets', Path(__file__).parent / 'assets')
+
+## Serve manifest.json via custom route
+@app.get('/manifest.json')
+async def serve_manifest():
+    manifest_path = Path(__file__).parent / 'manifest.json'
+    with open(manifest_path, 'r') as f:
+        return json.load(f)
 
 ## def helper function 
 def resource_path(rel_path: str) -> str:
@@ -52,11 +60,52 @@ def home_page():
     # Add PWA meta tags for mobile
     ui.add_head_html('''
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+        <meta name="mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
         <meta name="theme-color" content="#2E8B57">
         <link rel="manifest" href="/manifest.json">
         <link rel="apple-touch-icon" href="/assets/UnknownFrog.png">
+    ''')
+    
+    # Add fullscreen functionality - triggers silently on first user interaction
+    ui.add_head_html('''
+        <script>
+        let fullscreenRequested = false;
+        
+        function triggerFullscreen(e) {
+            if (!fullscreenRequested && e && e.isTrusted) {
+                fullscreenRequested = true;
+                
+                const elem = document.documentElement;
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(() => {
+                        fullscreenRequested = false;
+                    });
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                } else if (elem.mozRequestFullScreen) {
+                    elem.mozRequestFullScreen();
+                } else if (elem.msRequestFullScreen) {
+                    elem.msRequestFullScreen();
+                }
+                
+                // Remove listeners after first attempt
+                document.removeEventListener('click', triggerFullscreen);
+                document.removeEventListener('touchstart', triggerFullscreen);
+                document.removeEventListener('mousedown', triggerFullscreen);
+                document.removeEventListener('keydown', triggerFullscreen);
+            }
+        }
+        
+        // Setup listeners on page load
+        window.addEventListener('load', function() {
+            document.addEventListener('click', triggerFullscreen);
+            document.addEventListener('touchstart', triggerFullscreen);
+            document.addEventListener('mousedown', triggerFullscreen);
+            document.addEventListener('keydown', triggerFullscreen);
+        });
+        </script>
     ''')
 
     # ✅ Set the background color for the whole page
@@ -142,6 +191,28 @@ def home_page():
 @ui.page('/instructions')
 def instructions_page():
 
+    # Request fullscreen on user interaction
+    ui.add_head_html('''
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            function tryFullscreen(e) {
+                if (e.isTrusted) {
+                    const elem = document.documentElement;
+                    if (elem.requestFullscreen) {
+                        elem.requestFullscreen().catch(err => console.log('Fullscreen:', err.message));
+                    } else if (elem.webkitRequestFullscreen) {
+                        elem.webkitRequestFullscreen();
+                    }
+                    document.removeEventListener('click', tryFullscreen);
+                }
+            }
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                document.addEventListener('click', tryFullscreen, { once: true });
+            }
+        });
+        </script>
+    ''')
+
     # 🌿 Background (optional, to match your theme)
     #ui.query('body').style('background-color: #2E8B57; color: white;')
 
@@ -210,6 +281,28 @@ def instructions_page():
 @ui.page('/app_info')
 def app_info_page():
     
+    # Request fullscreen on user interaction
+    ui.add_head_html('''
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            function tryFullscreen(e) {
+                if (e.isTrusted) {
+                    const elem = document.documentElement;
+                    if (elem.requestFullscreen) {
+                        elem.requestFullscreen().catch(err => console.log('Fullscreen:', err.message));
+                    } else if (elem.webkitRequestFullscreen) {
+                        elem.webkitRequestFullscreen();
+                    }
+                    document.removeEventListener('click', tryFullscreen);
+                }
+            }
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                document.addEventListener('click', tryFullscreen, { once: true });
+            }
+        });
+        </script>
+    ''')
+    
     with ui.column().classes("w-full min-h-screen items-center justify-start bg-gray-100 px-4 py-6"):
 
         with ui.row().classes("justify-center w-full mb-4"):
@@ -243,6 +336,28 @@ def app_info_page():
 # --- Frog Detail Page ---
 @ui.page('/frog/{frog_name}')
 def frog_detail_page(frog_name: str):
+    
+    # Request fullscreen on user interaction
+    ui.add_head_html('''
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            function tryFullscreen(e) {
+                if (e.isTrusted) {
+                    const elem = document.documentElement;
+                    if (elem.requestFullscreen) {
+                        elem.requestFullscreen().catch(err => console.log('Fullscreen:', err.message));
+                    } else if (elem.webkitRequestFullscreen) {
+                        elem.webkitRequestFullscreen();
+                    }
+                    document.removeEventListener('click', tryFullscreen);
+                }
+            }
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                document.addEventListener('click', tryFullscreen, { once: true });
+            }
+        });
+        </script>
+    ''')
     
     # Simulate loading frog info
     frogs_list = [
@@ -347,6 +462,28 @@ def frog_detail_page(frog_name: str):
 ## -----Mystery Frog Page----##
 @ui.page('/mystery')
 def mystery_frog_page():
+
+    # Request fullscreen on user interaction
+    ui.add_head_html('''
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            function tryFullscreen(e) {
+                if (e.isTrusted) {
+                    const elem = document.documentElement;
+                    if (elem.requestFullscreen) {
+                        elem.requestFullscreen().catch(err => console.log('Fullscreen:', err.message));
+                    } else if (elem.webkitRequestFullscreen) {
+                        elem.webkitRequestFullscreen();
+                    }
+                    document.removeEventListener('click', tryFullscreen);
+                }
+            }
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                document.addEventListener('click', tryFullscreen, { once: true });
+            }
+        });
+        </script>
+    ''')
 
     # Simulate loading frog info
     frogs_list = [

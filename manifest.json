@@ -3,7 +3,7 @@
   "short_name": "Frog Quiz",
   "description": "Learn about 8 frog species through their calls and spectrograms",
   "start_url": "/",
-  "display": "standalone",
+  "display": "fullscreen",
   "background_color": "#2E8B57",
   "theme_color": "#2E8B57",
   "orientation": "landscape",
