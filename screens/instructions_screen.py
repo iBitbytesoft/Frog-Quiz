@@ -18,13 +18,13 @@ class InstructionsScreen(Screen):
             self.rect = Rectangle(size=main.size, pos=main.pos)
         main.bind(size=self._update_rect, pos=self._update_rect)
         
-        content = BoxLayout(orientation='vertical', padding=20, spacing=15)
+        content = BoxLayout(orientation='vertical', padding=15, spacing=8)
         
-        # Title
+        # Title (smaller)
         title = Label(
             text='Spectrograms display the frequency and amplitude of sound',
-            size_hint=(1, 0.08),
-            font_size='28sp',
+            size_hint=(1, 0.06),
+            font_size='24sp',
             color=(0, 0.5, 0, 1),
             bold=True,
             halign='center',
@@ -92,7 +92,7 @@ class InstructionsScreen(Screen):
         bottom_section = BoxLayout(size_hint=(1, 0.24), spacing=20)
         
         # Back button - maintain square aspect
-        back_container = BoxLayout(size_hint=(0.2, 1))
+        back_container = BoxLayout(size_hint=(0.15, 1))
         back_btn = Button(
             background_normal='assets/Arrow.png',
             background_down='assets/Arrow.png',
@@ -128,7 +128,7 @@ class InstructionsScreen(Screen):
         # Draw green border
         with green_box.canvas.after:
             Color(0.3, 0.69, 0.31, 1)  # Green color
-            self.green_line = Line(width=4)
+            self.green_line = Line(width=3)
         green_box.bind(pos=self._update_green_border, size=self._update_green_border)
         
         green_box.add_widget(green_label)
@@ -159,7 +159,7 @@ class InstructionsScreen(Screen):
         # Draw yellow border
         with yellow_box.canvas.after:
             Color(1, 0.84, 0, 1)  # Yellow color
-            self.yellow_line = Line(width=4)
+            self.yellow_line = Line(width=3)
         yellow_box.bind(pos=self._update_yellow_border, size=self._update_yellow_border)
         
         yellow_box.add_widget(yellow_label)
