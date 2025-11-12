@@ -275,6 +275,13 @@ def instructions_page():
             )
             
 
+##########################
+# --- Health Check Endpoint (for keep-alive pings) ---
+@ui.page('/health')
+def health_check():
+    """Simple health check endpoint for monitoring/keep-alive"""
+    return {'status': 'ok', 'timestamp': __import__('time').time()}
+
 
 ##########################
 # --- App Info page ---
